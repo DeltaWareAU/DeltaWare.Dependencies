@@ -31,7 +31,7 @@ namespace DeltaWare.Dependencies.Abstractions
         /// <exception cref="ArgumentNullException">Thrown when a null value is provided.</exception>
         void AddDependency<TDependency>(Func<IDependencyProvider, TDependency> dependency, Lifetime lifetime, Binding binding = Binding.Bound);
 
-        void AddDependency<TDependency, TImplementation>(Lifetime lifetime, Binding binding = Binding.Bound) where TDependency : TImplementation;
+        void AddDependency<TDependency, TImplementation>(Lifetime lifetime, Binding binding = Binding.Bound) where TImplementation : TDependency;
 
         /// <summary>
         /// Builds a <see cref="IDependencyProvider"/>.
@@ -70,7 +70,7 @@ namespace DeltaWare.Dependencies.Abstractions
         /// <exception cref="ArgumentNullException">Thrown when a null value is provided.</exception>
         bool TryAddDependency<TDependency>(Func<IDependencyProvider, TDependency> dependency, Lifetime lifetime, Binding binding = Binding.Bound);
 
-        bool TryAddDependency<TDependency, TImplementation>(Lifetime lifetime, Binding binding = Binding.Bound) where TDependency : TImplementation;
+        bool TryAddDependency<TDependency, TImplementation>(Lifetime lifetime, Binding binding = Binding.Bound) where TImplementation : TDependency;
 
         bool TryAddDependency<TDependency>(Lifetime lifetime, Binding binding = Binding.Bound);
     }

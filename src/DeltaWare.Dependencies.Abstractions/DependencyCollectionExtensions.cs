@@ -52,7 +52,7 @@ namespace DeltaWare.Dependencies.Abstractions
             collection.AddDependency(dependency, Lifetime.Scoped, binding);
         }
 
-        public static void AddScoped<TDependency, TImplementation>(this IDependencyCollection collection, Binding binding = Binding.Bound) where TDependency : TImplementation
+        public static void AddScoped<TDependency, TImplementation>(this IDependencyCollection collection, Binding binding = Binding.Bound) where TImplementation : TDependency
         {
             if (collection == null)
             {
@@ -110,7 +110,7 @@ namespace DeltaWare.Dependencies.Abstractions
             collection.AddDependency(dependency, Lifetime.Singleton, binding);
         }
 
-        public static void AddSingleton<TDependency, TImplementation>(this IDependencyCollection collection, Binding binding = Binding.Bound) where TDependency : TImplementation
+        public static void AddSingleton<TDependency, TImplementation>(this IDependencyCollection collection, Binding binding = Binding.Bound) where TImplementation : TDependency
         {
             if (collection == null)
             {
@@ -168,7 +168,7 @@ namespace DeltaWare.Dependencies.Abstractions
             collection.AddDependency(dependency, Lifetime.Transient, binding);
         }
 
-        public static void AddTransient<TDependency, TImplementation>(this IDependencyCollection collection, Binding binding = Binding.Bound) where TDependency : TImplementation
+        public static void AddTransient<TDependency, TImplementation>(this IDependencyCollection collection, Binding binding = Binding.Bound) where TImplementation : TDependency
         {
             if (collection == null)
             {
@@ -230,7 +230,7 @@ namespace DeltaWare.Dependencies.Abstractions
             return collection.TryAddDependency(dependency, Lifetime.Scoped, binding);
         }
 
-        public static bool TryAddScoped<TDependency, TImplementation>(this IDependencyCollection collection, Binding binding = Binding.Bound) where TDependency : TImplementation
+        public static bool TryAddScoped<TDependency, TImplementation>(this IDependencyCollection collection, Binding binding = Binding.Bound) where TImplementation : TDependency
         {
             if (collection == null)
             {
@@ -292,7 +292,7 @@ namespace DeltaWare.Dependencies.Abstractions
             return collection.TryAddDependency(dependency, Lifetime.Singleton, binding);
         }
 
-        public static bool TryAddSingleton<TDependency, TImplementation>(this IDependencyCollection collection, Binding binding = Binding.Bound) where TDependency : TImplementation
+        public static bool TryAddSingleton<TDependency, TImplementation>(this IDependencyCollection collection, Binding binding = Binding.Bound) where TImplementation : TDependency
         {
             if (collection == null)
             {
@@ -354,7 +354,7 @@ namespace DeltaWare.Dependencies.Abstractions
             return collection.TryAddDependency(dependency, Lifetime.Transient, binding);
         }
 
-        public static bool TryAddTransient<TDependency, TImplementation>(this IDependencyCollection collection, Binding binding = Binding.Bound) where TDependency : TImplementation
+        public static bool TryAddTransient<TDependency, TImplementation>(this IDependencyCollection collection, Binding binding = Binding.Bound) where TImplementation : TDependency
         {
             if (collection == null)
             {

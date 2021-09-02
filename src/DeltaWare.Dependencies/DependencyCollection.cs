@@ -73,7 +73,7 @@ namespace DeltaWare.Dependencies
             }
         }
 
-        public void AddDependency<TDependency, TImplementation>(Lifetime lifetime, Binding binding = Binding.Bound) where TDependency : TImplementation
+        public void AddDependency<TDependency, TImplementation>(Lifetime lifetime, Binding binding = Binding.Bound) where TImplementation : TDependency
         {
             Type dependencyType = typeof(TDependency);
 
@@ -186,7 +186,7 @@ namespace DeltaWare.Dependencies
             return _dependencies.TryAdd(dependencyType, dependencyDescriptor);
         }
 
-        public bool TryAddDependency<TDependency, TImplementation>(Lifetime lifetime, Binding binding = Binding.Bound) where TDependency : TImplementation
+        public bool TryAddDependency<TDependency, TImplementation>(Lifetime lifetime, Binding binding = Binding.Bound) where TImplementation : TDependency
         {
             Type dependencyType = typeof(TDependency);
 
