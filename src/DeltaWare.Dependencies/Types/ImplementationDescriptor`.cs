@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace DeltaWare.Dependencies.Types
 {
-    public class DependencyDescriptor<TDependency> : IDependencyDescriptor, ICloneable
+    public class ImplementationDescriptor<TDependency, TImplementation> : IDependencyDescriptor, ICloneable
     {
         /// <inheritdoc cref="IDependencyDescriptor.Binding"/>
         public Binding Binding { get; }
@@ -24,7 +24,7 @@ namespace DeltaWare.Dependencies.Types
         /// <param name="lifetime">Specifies the lifetime of the dependency.</param>
         /// <param name="binding">Specifies the binding of a dependency.</param>
         /// <exception cref="ArgumentNullException">Thrown when a null value is provided.</exception>
-        public DependencyDescriptor(Lifetime lifetime, Binding binding = Binding.Bound)
+        public ImplementationDescriptor(Lifetime lifetime, Binding binding = Binding.Bound)
         {
             Binding = binding;
             Lifetime = lifetime;
@@ -32,12 +32,12 @@ namespace DeltaWare.Dependencies.Types
 
         public object Clone()
         {
-            return new DependencyDescriptor<TDependency>(Lifetime, Binding);
+            return new ImplementationDescriptor<TDependency, TImplementation>(Lifetime, Binding);
         }
 
         public IDependencyInstance CreateInstance(IDependencyProvider provider)
         {
-            Type implementationType = typeof(TDependency);
+            Type implementationType = typeof(TImplementation);
 
             ConstructorInfo[] constructs = implementationType.GetConstructors();
 
@@ -64,7 +64,7 @@ namespace DeltaWare.Dependencies.Types
                 }
             }
 
-            object dependencyInstance = (TDependency)Activator.CreateInstance(typeof(TDependency), arguments);
+            object dependencyInstance = (TDependency)Activator.CreateInstance(typeof(TImplementation), arguments);
 
             return new DependencyInstance(dependencyInstance, Type, Lifetime, Binding);
         }

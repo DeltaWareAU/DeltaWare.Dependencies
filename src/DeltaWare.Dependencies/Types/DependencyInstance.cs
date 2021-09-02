@@ -1,27 +1,26 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
 using DeltaWare.Dependencies.Interfaces;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace DeltaWare.Dependencies.Types
 {
     /// <inheritdoc cref="IDependencyInstance"/>
-    public class DependencyInstance: IDependencyInstance
+    public class DependencyInstance : IDependencyInstance
     {
         /// <inheritdoc cref="IDependencyInstance.Binding"/>
         public Binding Binding { get; }
+
+        /// <inheritdoc cref="IDependencyInstance.Instance"/>
+        public object Instance { get; }
+
+        public bool IsDisposable { get; }
 
         /// <inheritdoc cref="IDependencyInstance.Lifetime"/>
         public Lifetime Lifetime { get; }
 
         /// <inheritdoc cref="IDependencyInstance.Type"/>
         public Type Type { get; }
-
-        /// <inheritdoc cref="IDependencyInstance.Instance"/>
-        public object Instance { get; }
-
-        public bool IsDisposable { get; }
 
         /// <summary>
         /// Creates a new instance of <see cref="DependencyInstance"/>.
@@ -30,7 +29,7 @@ namespace DeltaWare.Dependencies.Types
         /// <param name="type">Specifies the type of the dependency.</param>
         /// <param name="lifetime">Specifies the lifetime of the dependency.</param>
         /// <param name="binding">Specifies the binding on the dependency.</param>
-        public DependencyInstance([NotNull] object instance, [NotNull] Type type, Lifetime lifetime, Binding binding)
+        public DependencyInstance(object instance, Type type, Lifetime lifetime, Binding binding)
         {
             Type = type ?? throw new ArgumentNullException(nameof(type));
             Instance = instance ?? throw new ArgumentNullException(nameof(instance));
@@ -46,7 +45,7 @@ namespace DeltaWare.Dependencies.Types
         /// <inheritdoc cref="IDisposable.Dispose"/>
         public void Dispose()
         {
-            if(Binding != Binding.Bound)
+            if (Binding != Binding.Bound)
             {
                 return;
             }
@@ -61,12 +60,12 @@ namespace DeltaWare.Dependencies.Types
         /// </summary>
         protected virtual void Dispose(bool disposing)
         {
-            if(_disposed)
+            if (_disposed)
             {
                 return;
             }
 
-            if(disposing && Instance is IDisposable disposableImplementation)
+            if (disposing && Instance is IDisposable disposableImplementation)
             {
                 disposableImplementation.Dispose();
             }
@@ -74,6 +73,6 @@ namespace DeltaWare.Dependencies.Types
             _disposed = true;
         }
 
-        #endregion
+        #endregion IDisposable
     }
 }
