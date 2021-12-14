@@ -1,5 +1,4 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
-using DeltaWare.Dependencies.Interfaces;
 using System;
 using System.Collections.Generic;
 
@@ -10,7 +9,9 @@ namespace DeltaWare.Dependencies
     {
         private readonly List<object> _disposableDependencies = new();
         private readonly Dictionary<Type, IDependencyInstance> _scopedInstances = new();
+
         private readonly object _scopeLock = new();
+
         private readonly DependencyCollection _sourceCollection;
 
         public DependencyProvider(DependencyCollection sourceCollection)
@@ -21,7 +22,7 @@ namespace DeltaWare.Dependencies
         }
 
         /// <inheritdoc cref="IDependencyProvider.GetDependencies{TDependency}"/>
-        public List<TDependency> GetDependencies<TDependency>()
+        public List<TDependency> GetDependencies<TDependency>() where TDependency : class
         {
             // Get all registered dependencies that inherit the specified type.
             List<TDependency> dependencies = new List<TDependency>();
@@ -35,7 +36,7 @@ namespace DeltaWare.Dependencies
         }
 
         /// <inheritdoc cref="IDependencyProvider.GetDependency{TDependency}"/>
-        public TDependency GetDependency<TDependency>()
+        public TDependency GetDependency<TDependency>() where TDependency : class
         {
             return (TDependency)GetDependency(typeof(TDependency));
         }
@@ -81,7 +82,7 @@ namespace DeltaWare.Dependencies
         }
 
         /// <inheritdoc cref="IDependencyProvider.HasDependency{TDependency}"/>
-        public bool HasDependency<TDependency>()
+        public bool HasDependency<TDependency>() where TDependency : class
         {
             return HasDependency(typeof(TDependency));
         }
@@ -92,7 +93,7 @@ namespace DeltaWare.Dependencies
         }
 
         /// <inheritdoc cref="IDependencyProvider.TryGetDependency{TDependency}"/>
-        public bool TryGetDependency<TDependency>(out TDependency dependencyInstance)
+        public bool TryGetDependency<TDependency>(out TDependency dependencyInstance) where TDependency : class
         {
             bool found = TryGetDependency(typeof(TDependency), out object instance);
 

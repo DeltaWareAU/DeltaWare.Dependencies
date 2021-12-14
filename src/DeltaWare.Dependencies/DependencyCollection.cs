@@ -1,6 +1,5 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
 using DeltaWare.Dependencies.Abstractions.Exceptions;
-using DeltaWare.Dependencies.Interfaces;
 using DeltaWare.Dependencies.Types;
 using System;
 using System.Collections.Generic;
@@ -25,64 +24,65 @@ namespace DeltaWare.Dependencies
             _dependencies = dependencies;
         }
 
-        public void AddDependency<TDependency>(Lifetime lifetime, Binding binding = Binding.Bound)
+        public void AddDependency(IDependencyDescriptor dependencyDescriptor)
         {
-            Type dependencyType = typeof(TDependency);
+            if (dependencyDescriptor == null)
+            {
+                throw new ArgumentNullException(nameof(dependencyDescriptor));
+            }
 
+            if (!_dependencies.TryAdd(dependencyDescriptor.Type, dependencyDescriptor))
+            {
+                _dependencies[dependencyDescriptor.Type] = dependencyDescriptor;
+            }
+        }
+
+        public IDependencyDescriptor AddDependency<TDependency>(Lifetime lifetime, Binding binding = Binding.Bound) where TDependency : class
+        {
             IDependencyDescriptor dependencyDescriptor = new DependencyDescriptor<TDependency>(lifetime, binding);
 
-            if (!_dependencies.TryAdd(dependencyType, dependencyDescriptor))
-            {
-                _dependencies[dependencyType] = dependencyDescriptor;
-            }
+            AddDependency(dependencyDescriptor);
+
+            return dependencyDescriptor;
         }
 
         /// <inheritdoc cref="IDependencyCollection.AddDependency{TDependency}(Func{TDependency}, Lifetime, Binding)"/>
-        public void AddDependency<TDependency>(Func<TDependency> dependency, Lifetime lifetime, Binding binding = Binding.Bound)
+        public IDependencyDescriptor AddDependency<TDependency>(Func<TDependency> dependency, Lifetime lifetime, Binding binding = Binding.Bound) where TDependency : class
         {
             if (dependency == null)
             {
                 throw new ArgumentNullException(nameof(dependency));
             }
 
-            Type dependencyType = typeof(TDependency);
-
             IDependencyDescriptor dependencyDescriptor = new ActionDescriptor<TDependency>(dependency, lifetime, binding);
 
-            if (!_dependencies.TryAdd(dependencyType, dependencyDescriptor))
-            {
-                _dependencies[dependencyType] = dependencyDescriptor;
-            }
+            AddDependency(dependencyDescriptor);
+
+            return dependencyDescriptor;
         }
 
         /// <inheritdoc cref="IDependencyCollection.AddDependency{TDependency}(Func{IDependencyProvider, TDependency}, Lifetime, Binding)"/>
-        public void AddDependency<TDependency>(Func<IDependencyProvider, TDependency> dependency, Lifetime lifetime, Binding binding = Binding.Bound)
+        public IDependencyDescriptor AddDependency<TDependency>(Func<IDependencyProvider, TDependency> dependency, Lifetime lifetime, Binding binding = Binding.Bound) where TDependency : class
         {
             if (dependency == null)
             {
                 throw new ArgumentNullException(nameof(dependency));
             }
 
-            Type dependencyType = typeof(TDependency);
-
             IDependencyDescriptor dependencyDescriptor = new ActionDescriptor<TDependency>(dependency, lifetime, binding);
 
-            if (!_dependencies.TryAdd(dependencyType, dependencyDescriptor))
-            {
-                _dependencies[dependencyType] = dependencyDescriptor;
-            }
+            AddDependency(dependencyDescriptor);
+
+            return dependencyDescriptor;
         }
 
-        public void AddDependency<TDependency, TImplementation>(Lifetime lifetime, Binding binding = Binding.Bound) where TImplementation : TDependency
+        public IDependencyDescriptor AddDependency<TDependency, TImplementation>(Lifetime lifetime, Binding binding = Binding.Bound) where TImplementation : TDependency where TDependency : class
         {
-            Type dependencyType = typeof(TDependency);
-
             IDependencyDescriptor dependencyDescriptor = new ImplementationDescriptor<TDependency, TImplementation>(lifetime, binding);
 
-            if (!_dependencies.TryAdd(dependencyType, dependencyDescriptor))
-            {
-                _dependencies[dependencyType] = dependencyDescriptor;
-            }
+            AddDependency(dependencyDescriptor);
+
+            return dependencyDescriptor;
         }
 
         /// <inheritdoc cref="IDependencyCollection.BuildProvider"/>
@@ -95,15 +95,15 @@ namespace DeltaWare.Dependencies
         {
             Dictionary<Type, IDependencyDescriptor> dependencies = new();
 
-            foreach (KeyValuePair<Type, IDependencyDescriptor> dependency in _dependencies)
+            foreach ((Type key, IDependencyDescriptor value) in _dependencies)
             {
-                if (dependency.Value is ICloneable cloneable)
+                if (value is ICloneable cloneable)
                 {
-                    dependencies.Add(dependency.Key, (IDependencyDescriptor)cloneable.Clone());
+                    dependencies.Add(key, (IDependencyDescriptor)cloneable.Clone());
                 }
                 else
                 {
-                    dependencies.Add(dependency.Key, dependency.Value);
+                    dependencies.Add(key, value);
                 }
             }
 
@@ -120,12 +120,16 @@ namespace DeltaWare.Dependencies
             throw new DependencyNotFoundException(dependencyType);
         }
 
-        public List<IDependencyDescriptor> GetDependencyDescriptors<TDependency>()
+        public IDependencyDescriptor GetDependencyDescriptor<TDependency>() where TDependency : class
+        {
+            return GetDependencyDescriptor(typeof(TDependency));
+        }
+
+        public IEnumerable<IDependencyDescriptor> GetDependencyDescriptors<TDependency>() where TDependency : class
         {
             return _dependencies
                 .Where(d => d.Key.GetInterfaces().Contains(typeof(TDependency)))
-                .Select(d => d.Value)
-                .ToList();
+                .Select(d => d.Value);
         }
 
         public IDependencyInstance GetSingletonInstance(IDependencyDescriptor descriptor, IDependencyProvider provider)
@@ -146,7 +150,7 @@ namespace DeltaWare.Dependencies
         }
 
         /// <inheritdoc cref="IDependencyCollection.HasDependency{TDependency}"/>
-        public bool HasDependency<TDependency>()
+        public bool HasDependency<TDependency>() where TDependency : class
         {
             return HasDependency(typeof(TDependency));
         }
@@ -156,52 +160,73 @@ namespace DeltaWare.Dependencies
             return _dependencies.ContainsKey(dependencyType);
         }
 
-        /// <inheritdoc cref="IDependencyCollection.TryAddDependency{TDependency}(Func{TDependency}, Lifetime, Binding)"/>
-        public bool TryAddDependency<TDependency>(Func<TDependency> dependency, Lifetime lifetime, Binding binding = Binding.Bound)
+        public bool Remove<TDependency>() where TDependency : class
+        {
+            return Remove(typeof(TDependency));
+        }
+
+        public bool Remove(Type dependencyType)
+        {
+            return _dependencies.Remove(dependencyType);
+        }
+
+        public bool TryAddDependency(IDependencyDescriptor dependencyDescriptor)
+        {
+            return _dependencies.TryAdd(dependencyDescriptor.Type, dependencyDescriptor);
+        }
+
+        public bool TryAddDependency<TDependency>(Func<TDependency> dependency, Lifetime lifetime, Binding binding, out IDependencyDescriptor dependencyDescriptor) where TDependency : class
         {
             if (dependency == null)
             {
                 throw new ArgumentNullException(nameof(dependency));
             }
 
-            Type dependencyType = typeof(TDependency);
+            IDependencyDescriptor descriptor = new ActionDescriptor<TDependency>(dependency, lifetime, binding);
 
-            IDependencyDescriptor dependencyDescriptor = new ActionDescriptor<TDependency>(dependency, lifetime, binding);
+            bool added = TryAddDependency(descriptor);
 
-            return _dependencies.TryAdd(dependencyType, dependencyDescriptor);
+            dependencyDescriptor = added ? descriptor : null;
+
+            return added;
         }
 
-        /// <inheritdoc cref="IDependencyCollection.TryAddDependency{TDependency}(Func{IDependencyProvider, TDependency}, Lifetime, Binding)"/>
-        public bool TryAddDependency<TDependency>(Func<IDependencyProvider, TDependency> dependency, Lifetime lifetime, Binding binding = Binding.Bound)
+        public bool TryAddDependency<TDependency>(Func<IDependencyProvider, TDependency> dependency, Lifetime lifetime, Binding binding, out IDependencyDescriptor dependencyDescriptor) where TDependency : class
         {
             if (dependency == null)
             {
                 throw new ArgumentNullException(nameof(dependency));
             }
 
-            Type dependencyType = typeof(TDependency);
+            IDependencyDescriptor descriptor = new ActionDescriptor<TDependency>(dependency, lifetime, binding);
 
-            IDependencyDescriptor dependencyDescriptor = new ActionDescriptor<TDependency>(dependency, lifetime, binding);
+            bool added = TryAddDependency(descriptor);
 
-            return _dependencies.TryAdd(dependencyType, dependencyDescriptor);
+            dependencyDescriptor = added ? descriptor : null;
+
+            return added;
         }
 
-        public bool TryAddDependency<TDependency, TImplementation>(Lifetime lifetime, Binding binding = Binding.Bound) where TImplementation : TDependency
+        public bool TryAddDependency<TDependency, TImplementation>(Lifetime lifetime, Binding binding, out IDependencyDescriptor dependencyDescriptor) where TImplementation : TDependency where TDependency : class
         {
-            Type dependencyType = typeof(TDependency);
+            IDependencyDescriptor descriptor = new ImplementationDescriptor<TDependency, TImplementation>(lifetime, binding);
 
-            IDependencyDescriptor dependencyDescriptor = new ImplementationDescriptor<TDependency, TImplementation>(lifetime, binding);
+            bool added = TryAddDependency(descriptor);
 
-            return _dependencies.TryAdd(dependencyType, dependencyDescriptor);
+            dependencyDescriptor = added ? descriptor : null;
+
+            return added;
         }
 
-        public bool TryAddDependency<TDependency>(Lifetime lifetime, Binding binding = Binding.Bound)
+        public bool TryAddDependency<TDependency>(Lifetime lifetime, Binding binding, out IDependencyDescriptor dependencyDescriptor) where TDependency : class
         {
-            Type dependencyType = typeof(TDependency);
+            IDependencyDescriptor descriptor = new DependencyDescriptor<TDependency>(lifetime, binding);
 
-            IDependencyDescriptor dependencyDescriptor = new DependencyDescriptor<TDependency>(lifetime, binding);
+            bool added = TryAddDependency(descriptor);
 
-            return _dependencies.TryAdd(dependencyType, dependencyDescriptor);
+            dependencyDescriptor = added ? descriptor : null;
+
+            return added;
         }
 
         #region IDisposable

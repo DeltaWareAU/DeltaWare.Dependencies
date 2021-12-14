@@ -1,6 +1,5 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
 using DeltaWare.Dependencies.Abstractions.Exceptions;
-using DeltaWare.Dependencies.Interfaces;
 using System;
 using System.Linq;
 using System.Reflection;

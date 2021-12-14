@@ -1,7 +1,6 @@
-﻿using DeltaWare.Dependencies.Abstractions;
-using System;
+﻿using System;
 
-namespace DeltaWare.Dependencies.Interfaces
+namespace DeltaWare.Dependencies.Abstractions
 {
     /// <summary>
     /// Represents an instance of a dependency.
