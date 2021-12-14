@@ -5,7 +5,7 @@ namespace DeltaWare.Dependencies.Abstractions.Exceptions
     /// <summary>
     /// Represents that a dependency could not be found.
     /// </summary>
-    public class DependencyNotFoundException: Exception
+    public class DependencyNotFoundException : Exception
     {
         /// <summary>
         /// Creates a new instance of <see cref="DependencyNotFoundException"/>.

@@ -2,32 +2,22 @@
 using DeltaWare.Dependencies.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 namespace DeltaWare.Dependencies
 {
     /// <inheritdoc cref="IDependencyProvider"/>
-    internal class DependencyProvider: IDependencyProvider
+    internal class DependencyProvider : IDependencyProvider
     {
+        private readonly List<object> _disposableDependencies = new();
+        private readonly Dictionary<Type, IDependencyInstance> _scopedInstances = new();
+        private readonly object _scopeLock = new();
         private readonly DependencyCollection _sourceCollection;
 
-        private readonly Dictionary<Type, IDependencyInstance> _scopedInstances = new Dictionary<Type, IDependencyInstance>();
-
-        private readonly List<object> _disposableDependencies = new List<object>();
-
-        private readonly object _scopeLock = new object();
-
-        public DependencyProvider([NotNull] DependencyCollection sourceCollection)
+        public DependencyProvider(DependencyCollection sourceCollection)
         {
             _sourceCollection = sourceCollection ?? throw new ArgumentNullException(nameof(sourceCollection));
-        }
 
-        /// <inheritdoc cref="IDependencyProvider.GetDependency{TDependency}"/>
-        public TDependency GetDependency<TDependency>()
-        {
-            IDependencyDescriptor descriptor = _sourceCollection.GetDependencyDescriptor<TDependency>();
-
-            return (TDependency)GetDependency(descriptor);
+            sourceCollection.AddScoped<IDependencyProvider>(() => this, Binding.Unbound);
         }
 
         /// <inheritdoc cref="IDependencyProvider.GetDependencies{TDependency}"/>
@@ -36,7 +26,7 @@ namespace DeltaWare.Dependencies
             // Get all registered dependencies that inherit the specified type.
             List<TDependency> dependencies = new List<TDependency>();
 
-            foreach(IDependencyDescriptor descriptor in _sourceCollection.GetDependencyDescriptors<TDependency>())
+            foreach (IDependencyDescriptor descriptor in _sourceCollection.GetDependencyDescriptors<TDependency>())
             {
                 dependencies.Add((TDependency)GetDependency(descriptor));
             }
@@ -44,32 +34,45 @@ namespace DeltaWare.Dependencies
             return dependencies;
         }
 
+        /// <inheritdoc cref="IDependencyProvider.GetDependency{TDependency}"/>
+        public TDependency GetDependency<TDependency>()
+        {
+            return (TDependency)GetDependency(typeof(TDependency));
+        }
+
+        public object GetDependency(Type dependencyType)
+        {
+            IDependencyDescriptor descriptor = _sourceCollection.GetDependencyDescriptor(dependencyType);
+
+            return GetDependency(descriptor);
+        }
+
         public object GetDependency(IDependencyDescriptor descriptor)
         {
-            if(descriptor.Lifetime == Lifetime.Singleton)
+            if (descriptor.Lifetime == Lifetime.Singleton)
             {
                 return _sourceCollection.GetSingletonInstance(descriptor, this).Instance;
             }
 
-            lock(_scopeLock)
+            lock (_scopeLock)
             {
-                if(_scopedInstances.TryGetValue(descriptor.Type, out IDependencyInstance instance))
+                if (_scopedInstances.TryGetValue(descriptor.Type, out IDependencyInstance instance))
                 {
                     return instance.Instance;
                 }
 
-                instance = descriptor.GetInstance(this);
+                instance = descriptor.CreateInstance(this);
 
-                // Only scoped are tracked by the Provider so they are added.
-                // Transient are not tracked at all, unless they are disposable.
-                if(instance.Lifetime == Lifetime.Scoped)
+                // Only scoped are tracked by the Provider so they are added. Transient are not
+                // tracked at all, unless they are disposable.
+                if (instance.Lifetime == Lifetime.Scoped)
                 {
                     _scopedInstances.Add(descriptor.Type, instance);
                 }
 
-                if(descriptor.IsDisposableType)
+                if (instance.Binding == Binding.Bound && instance.IsDisposable)
                 {
-                    // Track all disposable dependencies.
+                    // Track all bound disposable dependencies.
                     _disposableDependencies.Add(instance);
                 }
 
@@ -77,25 +80,39 @@ namespace DeltaWare.Dependencies
             }
         }
 
-        /// <inheritdoc cref="IDependencyProvider.TryGetDependency{TDependency}"/>
-        public bool TryGetDependency<TDependency>(out TDependency dependencyInstance)
-        {
-            if(!HasDependency<TDependency>())
-            {
-                dependencyInstance = default;
-
-                return false;
-            }
-
-            dependencyInstance = GetDependency<TDependency>();
-
-            return true;
-        }
-
         /// <inheritdoc cref="IDependencyProvider.HasDependency{TDependency}"/>
         public bool HasDependency<TDependency>()
         {
-            return _sourceCollection.HasDependency<TDependency>();
+            return HasDependency(typeof(TDependency));
+        }
+
+        public bool HasDependency(Type dependencyType)
+        {
+            return _sourceCollection.HasDependency(dependencyType);
+        }
+
+        /// <inheritdoc cref="IDependencyProvider.TryGetDependency{TDependency}"/>
+        public bool TryGetDependency<TDependency>(out TDependency dependencyInstance)
+        {
+            bool found = TryGetDependency(typeof(TDependency), out object instance);
+
+            dependencyInstance = (TDependency)instance;
+
+            return found;
+        }
+
+        public bool TryGetDependency(Type dependencyType, out object dependencyInstance)
+        {
+            if (HasDependency(dependencyType))
+            {
+                dependencyInstance = GetDependency(dependencyType);
+
+                return true;
+            }
+
+            dependencyInstance = default;
+
+            return false;
         }
 
         #region IDisposable
@@ -115,14 +132,14 @@ namespace DeltaWare.Dependencies
         /// </summary>
         protected virtual void Dispose(bool disposing)
         {
-            if(_disposed)
+            if (_disposed)
             {
                 return;
             }
 
-            if(disposing)
+            if (disposing)
             {
-                foreach(IDisposable disposable in _disposableDependencies)
+                foreach (IDisposable disposable in _disposableDependencies)
                 {
                     disposable.Dispose();
                 }
@@ -131,6 +148,6 @@ namespace DeltaWare.Dependencies
             _disposed = true;
         }
 
-        #endregion
+        #endregion IDisposable
     }
 }

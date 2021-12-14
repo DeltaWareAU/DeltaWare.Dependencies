@@ -1,6 +1,5 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace DeltaWare.Dependencies.Interfaces
 {
@@ -24,14 +23,12 @@ namespace DeltaWare.Dependencies.Interfaces
         /// </summary>
         Type Type { get; }
 
-        bool IsDisposableType { get; }
-
         /// <summary>
         /// Gets an instance of the dependency.
         /// </summary>
         /// <param name="provider">Specifies the provider used to instantiate the dependency.</param>
         /// <exception cref="ArgumentNullException">Thrown when a null value is provided.</exception>
         /// <exception cref="NullReferenceException">Thrown when no instance could be found.</exception>
-        IDependencyInstance GetInstance([NotNull] IDependencyProvider provider);
+        IDependencyInstance CreateInstance(IDependencyProvider provider);
     }
 }
