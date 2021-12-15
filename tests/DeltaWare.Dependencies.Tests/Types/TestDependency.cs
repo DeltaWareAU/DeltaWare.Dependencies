@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 
-namespace DeltaWare.Dependencies.Tests
+namespace DeltaWare.Dependencies.Tests.Types
 {
     public class TestDependency
     {

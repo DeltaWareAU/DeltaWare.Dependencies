@@ -10,7 +10,7 @@
     <Product>DeltaWare.Dependencies</Product>
     <Copyright>Copyright (c) 2020 Bradley Clarke</Copyright>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <Version>1.5.0.3</Version>
+    <Version>1.5.1.1</Version>
     <Description>Abtractions for DeltaWare.Dependencies</Description>
     <PackageIcon>nuget_icon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/armorall171/DeltaWare.Dependencies</PackageProjectUrl>
@@ -19,7 +19,18 @@
     <PackageTags>Dependencies; Collection; Generic; Abstraction</PackageTags>
       <IncludeSymbols>true</IncludeSymbols>
       <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-      <PackageReleaseNotes>FIXED | Where clause for generic types</PackageReleaseNotes>
+      <PackageReleaseNotes>ADDED - CircularDependencyExcpeption, includes dependency stack for help with debugging
+ADDED - SingletonDependencyException
+ADDED - MultipleDependencyConstructorsException
+ADDED - IDependencyScope
+ADDED - IDependencyDescriptor
+ADDED - IDependencyInstance
+ADDED - IDependencyInstance.Instance&lt;T&gt;()
+
+CHANGED - GenericType TDependency now needs to be of type class
+
+MOVED - Binding and Lifetime to Enem Namespace
+</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,7 +1,7 @@
-﻿using DeltaWare.Dependencies.Abstractions;
+﻿using DeltaWare.Dependencies.Abstractions.Enums;
 using System;
 
-namespace DeltaWare.Dependencies.Interfaces
+namespace DeltaWare.Dependencies.Abstractions
 {
     /// <summary>
     /// Represents an instance of a dependency.
