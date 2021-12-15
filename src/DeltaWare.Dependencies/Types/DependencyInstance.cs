@@ -1,12 +1,14 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
-using DeltaWare.Dependencies.Interfaces;
+using DeltaWare.Dependencies.Abstractions.Enums;
 using System;
+using System.Diagnostics;
 using System.Linq;
 
 namespace DeltaWare.Dependencies.Types
 {
     /// <inheritdoc cref="IDependencyInstance"/>
-    public class DependencyInstance : IDependencyInstance
+    [DebuggerDisplay("Type: {Type.Name} | Lifetime: {Lifetime} - Binding: {Binding}")]
+    internal class DependencyInstance : IDependencyInstance
     {
         /// <inheritdoc cref="IDependencyInstance.Binding"/>
         public Binding Binding { get; }
