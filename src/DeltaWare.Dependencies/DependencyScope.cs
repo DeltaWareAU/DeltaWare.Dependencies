@@ -7,17 +7,32 @@ namespace DeltaWare.Dependencies
 {
     internal class DependencyScope : IDependencyScope
     {
-        private readonly Dictionary<Type, IDependencyInstance> _scopedInstances = new();
-
-        private readonly List<IDependencyInstance> _disposableInstances = new();
-
         private readonly List<IDisposable> _childScopes = new();
-
+        private readonly List<IDependencyInstance> _disposableInstances = new();
+        private readonly Dictionary<Type, IDependencyInstance> _scopedInstances = new();
         private readonly IReadOnlyDependencyCollection _sourceCollection;
 
         public DependencyScope(IReadOnlyDependencyCollection sourceCollection)
         {
             _sourceCollection = sourceCollection;
+        }
+
+        public IDependencyProvider BuildProvider()
+        {
+            DependencyProvider provider = new DependencyProvider(_sourceCollection, this);
+
+            _childScopes.Add(provider);
+
+            return provider;
+        }
+
+        public IDependencyScope CreateScope()
+        {
+            DependencyScope scope = new DependencyScope(_sourceCollection);
+
+            _childScopes.Add(scope);
+
+            return scope;
         }
 
         public void RegisterInstance(IDependencyInstance instance)
@@ -79,23 +94,5 @@ namespace DeltaWare.Dependencies
         }
 
         #endregion IDisposable
-
-        public IDependencyProvider BuildProvider()
-        {
-            DependencyProvider provider = new DependencyProvider(this, _sourceCollection);
-
-            _childScopes.Add(provider);
-
-            return provider;
-        }
-
-        public IDependencyScope CreateScope()
-        {
-            DependencyScope scope = new DependencyScope(_sourceCollection);
-
-            _childScopes.Add(scope);
-
-            return scope;
-        }
     }
 }

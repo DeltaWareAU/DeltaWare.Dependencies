@@ -84,6 +84,11 @@ namespace DeltaWare.Dependencies
             return dependencyDescriptor;
         }
 
+        public IDependencyProvider BuildProvider()
+        {
+            return new DependencyProvider((IReadOnlyDependencyCollection)Clone());
+        }
+
         public object Clone()
         {
             Dictionary<Type, IDependencyDescriptor> dependencies = new();
