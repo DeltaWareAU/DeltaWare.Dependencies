@@ -10,7 +10,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Description>Adds Dependency Collection/Provider, enabaling generic dependencies with lifetimes to be added. When a dependency is requested depending on its lifetime it will be instantiated and disposed of.</Description>
-    <Version>1.5.1.1</Version>
+    <Version>1.5.1.2</Version>
     <PackageIcon>nuget_icon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/armorall171/DeltaWare.Dependencies</PackageProjectUrl>
     <RepositoryUrl>https://github.com/armorall171/DeltaWare.Dependencies</RepositoryUrl>
@@ -18,12 +18,7 @@
     <PackageTags>Dependencies; Collection; Generic</PackageTags>
       <IncludeSymbols>true</IncludeSymbols>
       <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-      <PackageReleaseNotes>ADDED - Dependency Scoping.
-ADDED - Check for Singletons using lesser lifetimes
-ADDED - Check for Circular Dependencies, this should prevent a StackOverflowException.
-
-REWORKED - Descriptors
-REOWRKED - DependencyProvider and DependencyCollection</PackageReleaseNotes>
+      <PackageReleaseNotes>ADDED - IDependencyCollection.BuildProvider</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
