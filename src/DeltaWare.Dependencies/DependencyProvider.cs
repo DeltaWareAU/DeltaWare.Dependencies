@@ -11,18 +11,26 @@ namespace DeltaWare.Dependencies
 {
     internal class DependencyProvider : IDependencyProvider
     {
-        private readonly Dictionary<Type, IDependencyInstance> _scopedInstances = new();
-
         private readonly List<IDependencyInstance> _disposableInstances = new();
-
+        private readonly bool _internalScope;
+        private readonly DependencyScope _parentScope;
+        private readonly Dictionary<Type, IDependencyInstance> _scopedInstances = new();
         private readonly IReadOnlyDependencyCollection _sourceCollection;
 
-        private readonly DependencyScope _parentScope;
-
-        public DependencyProvider(DependencyScope scope, IReadOnlyDependencyCollection sourceCollection)
+        public DependencyProvider(IReadOnlyDependencyCollection sourceCollection, DependencyScope scope)
         {
-            _parentScope = scope;
             _sourceCollection = sourceCollection;
+
+            _parentScope = scope;
+            _internalScope = false;
+        }
+
+        public DependencyProvider(IReadOnlyDependencyCollection sourceCollection)
+        {
+            _sourceCollection = sourceCollection;
+
+            _parentScope = new DependencyScope(sourceCollection);
+            _internalScope = true;
         }
 
         #region Instantiation
@@ -34,8 +42,6 @@ namespace DeltaWare.Dependencies
                 if (dependencyStack.Contains(descriptor))
                 {
                     throw new CircularDependencyException(dependencyStack, descriptor);
-
-                    throw new Exception("Circular Dependency");
                 }
 
                 dependencyStack.Add(descriptor);
@@ -126,11 +132,6 @@ namespace DeltaWare.Dependencies
 
         #endregion Instantiation
 
-        public bool TryGetInstance(IDependencyDescriptor descriptor, out IDependencyInstance instance)
-        {
-            return _scopedInstances.TryGetValue(descriptor.Type, out instance);
-        }
-
         public IDependencyScope CreateScope()
         {
             return _parentScope.CreateScope();
@@ -167,45 +168,9 @@ namespace DeltaWare.Dependencies
             return GetInstance(descriptor).Instance<TDependency>();
         }
 
-        protected void RegisterInstance(IDependencyInstance instance)
-        {
-            if (instance.Lifetime == Lifetime.Singleton)
-            {
-                _parentScope.RegisterInstance(instance);
-
-                return;
-            }
-
-            if (instance.Lifetime == Lifetime.Scoped)
-            {
-                _scopedInstances.Add(instance.Type, instance);
-            }
-
-            if (instance.IsDisposable && instance.Binding == Binding.Bound)
-            {
-                _disposableInstances.Add(instance);
-            }
-        }
-
         public bool HasDependency<TDependency>() where TDependency : class
         {
             return _sourceCollection.HasDependency<TDependency>();
-        }
-
-        public bool TryGetDependency<TDependency>(out TDependency instance) where TDependency : class
-        {
-            IDependencyDescriptor descriptor = _sourceCollection.GetDependencyDescriptor<TDependency>();
-
-            if (descriptor == null)
-            {
-                instance = null;
-
-                return false;
-            }
-
-            instance = GetInstance(descriptor).Instance<TDependency>();
-
-            return true;
         }
 
         public bool TryGetDependencies<TDependency>(out IEnumerable<TDependency> instances) where TDependency : class
@@ -231,6 +196,22 @@ namespace DeltaWare.Dependencies
             return true;
         }
 
+        public bool TryGetDependency<TDependency>(out TDependency instance) where TDependency : class
+        {
+            IDependencyDescriptor descriptor = _sourceCollection.GetDependencyDescriptor<TDependency>();
+
+            if (descriptor == null)
+            {
+                instance = null;
+
+                return false;
+            }
+
+            instance = GetInstance(descriptor).Instance<TDependency>();
+
+            return true;
+        }
+
         public bool TryGetDependency(Type dependencyType, out object instance)
         {
             IDependencyDescriptor descriptor = _sourceCollection.GetDependencyDescriptor(dependencyType);
@@ -245,6 +226,31 @@ namespace DeltaWare.Dependencies
             instance = GetInstance(descriptor).Instance;
 
             return true;
+        }
+
+        public bool TryGetInstance(IDependencyDescriptor descriptor, out IDependencyInstance instance)
+        {
+            return _scopedInstances.TryGetValue(descriptor.Type, out instance);
+        }
+
+        protected void RegisterInstance(IDependencyInstance instance)
+        {
+            if (instance.Lifetime == Lifetime.Singleton)
+            {
+                _parentScope.RegisterInstance(instance);
+
+                return;
+            }
+
+            if (instance.Lifetime == Lifetime.Scoped)
+            {
+                _scopedInstances.Add(instance.Type, instance);
+            }
+
+            if (instance.IsDisposable && instance.Binding == Binding.Bound)
+            {
+                _disposableInstances.Add(instance);
+            }
         }
 
         #region IDisposable
@@ -271,6 +277,11 @@ namespace DeltaWare.Dependencies
 
             if (disposing)
             {
+                if (_internalScope)
+                {
+                    _parentScope.Dispose();
+                }
+
                 foreach (IDependencyInstance instance in _disposableInstances)
                 {
                     instance.Dispose();
