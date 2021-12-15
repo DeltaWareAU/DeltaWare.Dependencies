@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using DeltaWare.Dependencies.Abstractions.Stack;
+using System;
 
 namespace DeltaWare.Dependencies.Abstractions.Exceptions
 {
     public class CircularDependencyException : Exception
     {
-        public IReadOnlyList<IDependencyDescriptor> DependencyStack { get; }
+        public IStack<IDependencyDescriptor> DependencyStack { get; }
 
-        public CircularDependencyException(List<IDependencyDescriptor> dependencyStack, IDependencyDescriptor descriptor) : base($"Circular dependencies found for {descriptor.Type.Name}")
+        public CircularDependencyException(IStack<IDependencyDescriptor> dependencyStack) : base($"Circular dependencies found for {dependencyStack.Value.Type.Name}")
         {
-            dependencyStack.Add(descriptor);
-
             DependencyStack = dependencyStack;
         }
     }
