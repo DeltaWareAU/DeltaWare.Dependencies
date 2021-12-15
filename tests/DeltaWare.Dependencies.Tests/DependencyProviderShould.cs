@@ -1,5 +1,6 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
 using DeltaWare.Dependencies.Abstractions.Exceptions;
+using DeltaWare.Dependencies.Tests.Types;
 using Shouldly;
 using Xunit;
 
@@ -264,6 +265,20 @@ namespace DeltaWare.Dependencies.Tests
             dependencyScope.Dispose();
 
             disposable.IsDisposed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void ThrowCircularDependencyException()
+        {
+            IDependencyCollection collection = new DependencyCollection();
+
+            collection.AddScoped<CircularDependencyA>();
+            collection.AddScoped<CircularDependencyB>();
+
+            using IDependencyScope scope = collection.CreateScope();
+            using IDependencyProvider provider = scope.BuildProvider();
+
+            Should.Throw<CircularDependencyException>(provider.GetDependency<CircularDependencyA>);
         }
 
         [Fact]

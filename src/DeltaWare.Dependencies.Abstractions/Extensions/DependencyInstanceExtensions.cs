@@ -1,4 +1,5 @@
-﻿namespace DeltaWare.Dependencies.Abstractions
+﻿// ReSharper disable once CheckNamespace
+namespace DeltaWare.Dependencies.Abstractions
 {
     public static class DependencyInstanceExtensions
     {

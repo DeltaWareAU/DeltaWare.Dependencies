@@ -1,5 +1,6 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
 using DeltaWare.Dependencies.Abstractions.Exceptions;
+using DeltaWare.Dependencies.Tests.Types;
 using Shouldly;
 using Xunit;
 

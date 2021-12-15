@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DeltaWare.Dependencies.Tests
+namespace DeltaWare.Dependencies.Tests.Types
 {
     public class TestDisposable : IDisposable
     {

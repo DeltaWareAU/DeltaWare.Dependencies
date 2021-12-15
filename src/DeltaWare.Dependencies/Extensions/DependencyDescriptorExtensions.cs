@@ -3,7 +3,7 @@ using DeltaWare.Dependencies.Types;
 
 namespace DeltaWare.Dependencies.Extensions
 {
-    public static class DependencyDescriptorExtensions
+    internal static class DependencyDescriptorExtensions
     {
         public static IDependencyInstance ToInstance(this IDependencyDescriptor descriptor, object instance)
         {

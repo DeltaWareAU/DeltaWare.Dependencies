@@ -1,28 +1,40 @@
-﻿using System;
+﻿using DeltaWare.Dependencies.Abstractions.Enums;
+using System;
 
 namespace DeltaWare.Dependencies.Abstractions
 {
     /// <summary>
-    /// Describes a dependency.
+    /// Describes a dependencies lifetime and implementation.
     /// </summary>
     public interface IDependencyDescriptor
     {
         /// <summary>
-        /// Specifies the <see cref="Binding"/> of the <see cref="IDependencyDescriptor"/>.
+        /// Specifies the <see cref="Binding"/>.
         /// </summary>
         Binding Binding { get; }
 
+        /// <summary>
+        /// Defines how to get an instance of the dependency.
+        /// </summary>
         public Func<IDependencyProvider, object> ImplementationFactory { get; }
+
+        /// <summary>
+        /// Defines how to get an instance of the dependency.
+        /// </summary>
         Func<object> ImplementationInstance { get; }
+
+        /// <summary>
+        /// Defines the implementation <see cref="Type"/>.
+        /// </summary>
         public Type ImplementationType { get; }
 
         /// <summary>
-        /// Specifies the <see cref="Lifetime"/> of the <see cref="IDependencyDescriptor"/>.
+        /// Specifies the <see cref="Lifetime"/>.
         /// </summary>
         Lifetime Lifetime { get; }
 
         /// <summary>
-        /// Specified the <see cref="Type"/> of the <see cref="IDependencyDescriptor"/>,
+        /// Specified the <see cref="Type"/>.
         /// </summary>
         Type Type { get; }
     }

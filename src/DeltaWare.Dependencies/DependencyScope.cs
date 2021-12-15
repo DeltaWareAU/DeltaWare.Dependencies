@@ -1,4 +1,5 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
+using DeltaWare.Dependencies.Abstractions.Enums;
 using System;
 using System.Collections.Generic;
 
@@ -8,7 +9,7 @@ namespace DeltaWare.Dependencies
     {
         private readonly Dictionary<Type, IDependencyInstance> _scopedInstances = new();
 
-        private readonly List<IDisposable> _disposableInstances = new();
+        private readonly List<IDependencyInstance> _disposableInstances = new();
 
         private readonly List<IDisposable> _childScopes = new();
 
@@ -30,7 +31,7 @@ namespace DeltaWare.Dependencies
 
             if (instance.IsDisposable && instance.Binding == Binding.Bound)
             {
-                _disposableInstances.Add((IDisposable)instance.Instance);
+                _disposableInstances.Add(instance);
             }
         }
 
@@ -63,14 +64,14 @@ namespace DeltaWare.Dependencies
 
             if (disposing)
             {
-                foreach (IDisposable disposable in _childScopes)
+                foreach (IDisposable instance in _childScopes)
                 {
-                    disposable.Dispose();
+                    instance.Dispose();
                 }
 
-                foreach (IDisposable disposable in _disposableInstances)
+                foreach (IDependencyInstance instance in _disposableInstances)
                 {
-                    disposable.Dispose();
+                    instance.Dispose();
                 }
             }
 

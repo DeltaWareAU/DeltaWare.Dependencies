@@ -1,8 +1,11 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
+using DeltaWare.Dependencies.Abstractions.Enums;
 using System;
+using System.Diagnostics;
 
 namespace DeltaWare.Dependencies.Types
 {
+    [DebuggerDisplay("Type: {Type.Name} | Lifetime: {Lifetime} - Binding: {Binding}")]
     public class DependencyDescriptor : IDependencyDescriptor
     {
         public Binding Binding { get; }

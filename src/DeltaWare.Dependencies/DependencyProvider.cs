@@ -1,4 +1,5 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
+using DeltaWare.Dependencies.Abstractions.Enums;
 using DeltaWare.Dependencies.Abstractions.Exceptions;
 using DeltaWare.Dependencies.Extensions;
 using System;
@@ -12,7 +13,7 @@ namespace DeltaWare.Dependencies
     {
         private readonly Dictionary<Type, IDependencyInstance> _scopedInstances = new();
 
-        private readonly List<IDisposable> _disposableInstances = new();
+        private readonly List<IDependencyInstance> _disposableInstances = new();
 
         private readonly IReadOnlyDependencyCollection _sourceCollection;
 
@@ -24,49 +25,22 @@ namespace DeltaWare.Dependencies
             _sourceCollection = sourceCollection;
         }
 
-        public bool TryGetInstance(IDependencyDescriptor descriptor, out IDependencyInstance instance)
-        {
-            return _scopedInstances.TryGetValue(descriptor.Type, out instance);
-        }
+        #region Instantiation
 
-        public IDependencyScope CreateScope()
+        public IDependencyInstance GetInstance(IDependencyDescriptor descriptor, List<IDependencyDescriptor> dependencyStack = null)
         {
-            return _parentScope.CreateScope();
-        }
-
-        public IEnumerable<TDependency> GetDependencies<TDependency>() where TDependency : class
-        {
-            List<TDependency> instances = new List<TDependency>();
-
-            foreach (IDependencyDescriptor descriptor in _sourceCollection.GetDependencyDescriptors<TDependency>())
+            if (dependencyStack != null)
             {
-                TDependency instance = GetDependency(descriptor).Instance<TDependency>();
+                if (dependencyStack.Contains(descriptor))
+                {
+                    throw new CircularDependencyException(dependencyStack, descriptor);
 
-                instances.Add(instance);
+                    throw new Exception("Circular Dependency");
+                }
+
+                dependencyStack.Add(descriptor);
             }
 
-            if (instances.Count == 0)
-            {
-                throw new DependencyNotFoundException(typeof(TDependency));
-            }
-
-            return instances;
-        }
-
-        public TDependency GetDependency<TDependency>() where TDependency : class
-        {
-            IDependencyDescriptor descriptor = _sourceCollection.GetDependencyDescriptor<TDependency>();
-
-            if (descriptor == null)
-            {
-                throw new DependencyNotFoundException(typeof(TDependency));
-            }
-
-            return GetDependency(descriptor).Instance<TDependency>();
-        }
-
-        public IDependencyInstance GetDependency(IDependencyDescriptor descriptor)
-        {
             if (descriptor.Lifetime == Lifetime.Singleton && _parentScope.TryGetInstance(descriptor, out IDependencyInstance instance))
             {
                 return instance;
@@ -77,34 +51,14 @@ namespace DeltaWare.Dependencies
                 return instance;
             }
 
-            instance = CreateInstance(descriptor);
+            instance = CreateInstance(descriptor, dependencyStack);
 
             RegisterInstance(instance);
 
             return instance;
         }
 
-        protected void RegisterInstance(IDependencyInstance instance)
-        {
-            if (instance.Lifetime == Lifetime.Singleton)
-            {
-                _parentScope.RegisterInstance(instance);
-
-                return;
-            }
-
-            if (instance.Lifetime == Lifetime.Scoped)
-            {
-                _scopedInstances.Add(instance.Type, instance);
-            }
-
-            if (instance.IsDisposable && instance.Binding == Binding.Bound)
-            {
-                _disposableInstances.Add((IDisposable)instance.Instance);
-            }
-        }
-
-        protected virtual IDependencyInstance CreateInstance(IDependencyDescriptor descriptor)
+        protected virtual IDependencyInstance CreateInstance(IDependencyDescriptor descriptor, List<IDependencyDescriptor> dependencyStack = null)
         {
             object instance;
 
@@ -150,7 +104,9 @@ namespace DeltaWare.Dependencies
                         throw new SingletonDependencyException(descriptor.Type);
                     }
 
-                    arguments[i] = GetDependency(parameterDescriptor).Instance;
+                    dependencyStack ??= new List<IDependencyDescriptor> { descriptor };
+
+                    arguments[i] = GetInstance(parameterDescriptor, dependencyStack).Instance;
                 }
 
                 instance = Activator.CreateInstance(descriptor.ImplementationType, arguments);
@@ -166,6 +122,69 @@ namespace DeltaWare.Dependencies
             }
 
             return descriptor.ToInstance(instance);
+        }
+
+        #endregion Instantiation
+
+        public bool TryGetInstance(IDependencyDescriptor descriptor, out IDependencyInstance instance)
+        {
+            return _scopedInstances.TryGetValue(descriptor.Type, out instance);
+        }
+
+        public IDependencyScope CreateScope()
+        {
+            return _parentScope.CreateScope();
+        }
+
+        public IEnumerable<TDependency> GetDependencies<TDependency>() where TDependency : class
+        {
+            List<TDependency> instances = new List<TDependency>();
+
+            foreach (IDependencyDescriptor descriptor in _sourceCollection.GetDependencyDescriptors<TDependency>())
+            {
+                TDependency instance = GetInstance(descriptor).Instance<TDependency>();
+
+                instances.Add(instance);
+            }
+
+            if (instances.Count == 0)
+            {
+                throw new DependencyNotFoundException(typeof(TDependency));
+            }
+
+            return instances;
+        }
+
+        public TDependency GetDependency<TDependency>() where TDependency : class
+        {
+            IDependencyDescriptor descriptor = _sourceCollection.GetDependencyDescriptor<TDependency>();
+
+            if (descriptor == null)
+            {
+                throw new DependencyNotFoundException(typeof(TDependency));
+            }
+
+            return GetInstance(descriptor).Instance<TDependency>();
+        }
+
+        protected void RegisterInstance(IDependencyInstance instance)
+        {
+            if (instance.Lifetime == Lifetime.Singleton)
+            {
+                _parentScope.RegisterInstance(instance);
+
+                return;
+            }
+
+            if (instance.Lifetime == Lifetime.Scoped)
+            {
+                _scopedInstances.Add(instance.Type, instance);
+            }
+
+            if (instance.IsDisposable && instance.Binding == Binding.Bound)
+            {
+                _disposableInstances.Add(instance);
+            }
         }
 
         public bool HasDependency<TDependency>() where TDependency : class
@@ -184,7 +203,7 @@ namespace DeltaWare.Dependencies
                 return false;
             }
 
-            instance = GetDependency(descriptor).Instance<TDependency>();
+            instance = GetInstance(descriptor).Instance<TDependency>();
 
             return true;
         }
@@ -195,7 +214,7 @@ namespace DeltaWare.Dependencies
 
             foreach (IDependencyDescriptor descriptor in _sourceCollection.GetDependencyDescriptors<TDependency>())
             {
-                TDependency dependencyInstance = GetDependency(descriptor).Instance<TDependency>();
+                TDependency dependencyInstance = GetInstance(descriptor).Instance<TDependency>();
 
                 dependencyInstances.Add(dependencyInstance);
             }
@@ -223,7 +242,7 @@ namespace DeltaWare.Dependencies
                 return false;
             }
 
-            instance = GetDependency(descriptor).Instance;
+            instance = GetInstance(descriptor).Instance;
 
             return true;
         }
@@ -252,9 +271,9 @@ namespace DeltaWare.Dependencies
 
             if (disposing)
             {
-                foreach (IDisposable disposable in _disposableInstances)
+                foreach (IDependencyInstance instance in _disposableInstances)
                 {
-                    disposable.Dispose();
+                    instance.Dispose();
                 }
             }
 

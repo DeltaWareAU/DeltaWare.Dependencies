@@ -1,5 +1,7 @@
-﻿using System;
+﻿using DeltaWare.Dependencies.Abstractions.Enums;
+using System;
 
+// ReSharper disable once CheckNamespace
 namespace DeltaWare.Dependencies.Abstractions
 {
     public static class DependencyCollectionExtensions

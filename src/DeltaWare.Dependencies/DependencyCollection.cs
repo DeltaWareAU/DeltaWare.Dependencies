@@ -1,12 +1,15 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
+using DeltaWare.Dependencies.Abstractions.Enums;
 using DeltaWare.Dependencies.Types;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace DeltaWare.Dependencies
 {
     /// <inheritdoc cref="IDependencyCollection"/>
+    [DebuggerDisplay("Count {_dependencies.Count}")]
     public class DependencyCollection : IDependencyCollection, ICloneable
     {
         private readonly Dictionary<Type, IDependencyDescriptor> _dependencies = new();
