@@ -268,6 +268,48 @@ namespace DeltaWare.Dependencies.Tests
         }
 
         [Fact]
+        public void GetDependencyWithProvider()
+        {
+            IDependencyCollection collection = new DependencyCollection();
+
+            collection.AddScoped<DependencyWithProvider, DependencyWithProvider>();
+
+            using (IDependencyProvider provider = collection.BuildProvider())
+            {
+                DependencyWithProvider dependency = Should.NotThrow(provider.GetDependency<DependencyWithProvider>);
+
+                dependency.ShouldNotBeNull();
+                dependency.Provider.ShouldNotBeNull();
+                dependency.Provider.ShouldBe(provider);
+            }
+
+            collection = new DependencyCollection();
+
+            collection.AddSingleton<DependencyWithProvider, DependencyWithProvider>();
+
+            using (IDependencyProvider provider = collection.BuildProvider())
+            {
+                Should.Throw<SingletonDependencyException>(provider.GetDependency<DependencyWithProvider>);
+            }
+        }
+
+        [Fact]
+        public void GetDependencyWithScope()
+        {
+            IDependencyCollection collection = new DependencyCollection();
+
+            collection.AddSingleton<DependencyWithScope, DependencyWithScope>();
+
+            using (IDependencyProvider provider = collection.BuildProvider())
+            {
+                DependencyWithScope dependency = Should.NotThrow(provider.GetDependency<DependencyWithScope>);
+
+                dependency.ShouldNotBeNull();
+                dependency.Scope.ShouldNotBeNull();
+            }
+        }
+
+        [Fact]
         public void ThrowCircularDependencyException()
         {
             IDependencyCollection collection = new DependencyCollection();
