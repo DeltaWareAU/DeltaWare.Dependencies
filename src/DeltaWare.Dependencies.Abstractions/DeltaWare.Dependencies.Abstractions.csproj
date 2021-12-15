@@ -10,7 +10,7 @@
     <Product>DeltaWare.Dependencies</Product>
     <Copyright>Copyright (c) 2020 Bradley Clarke</Copyright>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <Version>1.5.1.2</Version>
+    <Version>1.5.1.3</Version>
     <Description>Abtractions for DeltaWare.Dependencies</Description>
     <PackageIcon>nuget_icon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/armorall171/DeltaWare.Dependencies</PackageProjectUrl>
@@ -19,7 +19,7 @@
     <PackageTags>Dependencies; Collection; Generic; Abstraction</PackageTags>
       <IncludeSymbols>true</IncludeSymbols>
       <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-      <PackageReleaseNotes>ADDED - IDependencyCollection.BuildProvider</PackageReleaseNotes>
+      <PackageReleaseNotes>ADDED - IStack for circular dependency detection</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

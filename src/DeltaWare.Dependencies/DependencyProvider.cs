@@ -1,7 +1,9 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
 using DeltaWare.Dependencies.Abstractions.Enums;
 using DeltaWare.Dependencies.Abstractions.Exceptions;
+using DeltaWare.Dependencies.Abstractions.Stack;
 using DeltaWare.Dependencies.Extensions;
+using DeltaWare.Dependencies.Stack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,16 +37,17 @@ namespace DeltaWare.Dependencies
 
         #region Instantiation
 
-        public IDependencyInstance GetInstance(IDependencyDescriptor descriptor, List<IDependencyDescriptor> dependencyStack = null)
+        public IDependencyInstance GetInstance(IDependencyDescriptor descriptor, IStack<IDependencyDescriptor> parentStack = null)
         {
-            if (dependencyStack != null)
+            if (parentStack == null)
             {
-                if (dependencyStack.Contains(descriptor))
-                {
-                    throw new CircularDependencyException(dependencyStack, descriptor);
-                }
+                parentStack = new DependencyStack(descriptor);
+            }
+            else
+            {
+                parentStack = parentStack.CreateChild(descriptor);
 
-                dependencyStack.Add(descriptor);
+                parentStack.EnsureNoCircularDependencies();
             }
 
             if (descriptor.Lifetime == Lifetime.Singleton && _parentScope.TryGetInstance(descriptor, out IDependencyInstance instance))
@@ -57,14 +60,14 @@ namespace DeltaWare.Dependencies
                 return instance;
             }
 
-            instance = CreateInstance(descriptor, dependencyStack);
+            instance = CreateInstance(descriptor, parentStack);
 
             RegisterInstance(instance);
 
             return instance;
         }
 
-        protected virtual IDependencyInstance CreateInstance(IDependencyDescriptor descriptor, List<IDependencyDescriptor> dependencyStack = null)
+        protected virtual IDependencyInstance CreateInstance(IDependencyDescriptor descriptor, IStack<IDependencyDescriptor> parentStack)
         {
             object instance;
 
@@ -127,9 +130,7 @@ namespace DeltaWare.Dependencies
                             throw new SingletonDependencyException(descriptor.Type);
                         }
 
-                        dependencyStack ??= new List<IDependencyDescriptor> { descriptor };
-
-                        paramInstance = GetInstance(parameterDescriptor, dependencyStack).Instance;
+                        paramInstance = GetInstance(parameterDescriptor, parentStack).Instance;
                     }
 
                     arguments[i] = paramInstance;
