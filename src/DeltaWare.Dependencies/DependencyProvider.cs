@@ -1,119 +1,231 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
+using DeltaWare.Dependencies.Abstractions.Exceptions;
+using DeltaWare.Dependencies.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace DeltaWare.Dependencies
 {
-    /// <inheritdoc cref="IDependencyProvider"/>
     internal class DependencyProvider : IDependencyProvider
     {
-        private readonly List<object> _disposableDependencies = new();
         private readonly Dictionary<Type, IDependencyInstance> _scopedInstances = new();
 
-        private readonly object _scopeLock = new();
+        private readonly List<IDisposable> _disposableInstances = new();
 
-        private readonly DependencyCollection _sourceCollection;
+        private readonly IReadOnlyDependencyCollection _sourceCollection;
 
-        public DependencyProvider(DependencyCollection sourceCollection)
+        private readonly DependencyScope _parentScope;
+
+        public DependencyProvider(DependencyScope scope, IReadOnlyDependencyCollection sourceCollection)
         {
-            _sourceCollection = sourceCollection ?? throw new ArgumentNullException(nameof(sourceCollection));
-
-            sourceCollection.AddScoped<IDependencyProvider>(() => this, Binding.Unbound);
+            _parentScope = scope;
+            _sourceCollection = sourceCollection;
         }
 
-        /// <inheritdoc cref="IDependencyProvider.GetDependencies{TDependency}"/>
-        public List<TDependency> GetDependencies<TDependency>() where TDependency : class
+        public bool TryGetInstance(IDependencyDescriptor descriptor, out IDependencyInstance instance)
         {
-            // Get all registered dependencies that inherit the specified type.
-            List<TDependency> dependencies = new List<TDependency>();
+            return _scopedInstances.TryGetValue(descriptor.Type, out instance);
+        }
+
+        public IDependencyScope CreateScope()
+        {
+            return _parentScope.CreateScope();
+        }
+
+        public IEnumerable<TDependency> GetDependencies<TDependency>() where TDependency : class
+        {
+            List<TDependency> instances = new List<TDependency>();
 
             foreach (IDependencyDescriptor descriptor in _sourceCollection.GetDependencyDescriptors<TDependency>())
             {
-                dependencies.Add((TDependency)GetDependency(descriptor));
+                TDependency instance = GetDependency(descriptor).Instance<TDependency>();
+
+                instances.Add(instance);
             }
 
-            return dependencies;
+            if (instances.Count == 0)
+            {
+                throw new DependencyNotFoundException(typeof(TDependency));
+            }
+
+            return instances;
         }
 
-        /// <inheritdoc cref="IDependencyProvider.GetDependency{TDependency}"/>
         public TDependency GetDependency<TDependency>() where TDependency : class
         {
-            return (TDependency)GetDependency(typeof(TDependency));
+            IDependencyDescriptor descriptor = _sourceCollection.GetDependencyDescriptor<TDependency>();
+
+            if (descriptor == null)
+            {
+                throw new DependencyNotFoundException(typeof(TDependency));
+            }
+
+            return GetDependency(descriptor).Instance<TDependency>();
         }
 
-        public object GetDependency(Type dependencyType)
+        public IDependencyInstance GetDependency(IDependencyDescriptor descriptor)
+        {
+            if (descriptor.Lifetime == Lifetime.Singleton && _parentScope.TryGetInstance(descriptor, out IDependencyInstance instance))
+            {
+                return instance;
+            }
+
+            if (descriptor.Lifetime == Lifetime.Scoped && TryGetInstance(descriptor, out instance))
+            {
+                return instance;
+            }
+
+            instance = CreateInstance(descriptor);
+
+            RegisterInstance(instance);
+
+            return instance;
+        }
+
+        protected void RegisterInstance(IDependencyInstance instance)
+        {
+            if (instance.Lifetime == Lifetime.Singleton)
+            {
+                _parentScope.RegisterInstance(instance);
+
+                return;
+            }
+
+            if (instance.Lifetime == Lifetime.Scoped)
+            {
+                _scopedInstances.Add(instance.Type, instance);
+            }
+
+            if (instance.IsDisposable && instance.Binding == Binding.Bound)
+            {
+                _disposableInstances.Add((IDisposable)instance.Instance);
+            }
+        }
+
+        protected virtual IDependencyInstance CreateInstance(IDependencyDescriptor descriptor)
+        {
+            object instance;
+
+            if (descriptor.ImplementationFactory != null)
+            {
+                instance = descriptor.ImplementationFactory.Invoke(this);
+            }
+            else if (descriptor.ImplementationInstance != null)
+            {
+                instance = descriptor.ImplementationInstance.Invoke();
+            }
+            else if (descriptor.ImplementationType != null)
+            {
+                ConstructorInfo[] constructs = descriptor.ImplementationType.GetConstructors();
+
+                if (constructs.Length > 1)
+                {
+                    throw new ArgumentException($"Multiple constructs found for {descriptor.ImplementationType.Name}, only one may exist.");
+                }
+
+                ConstructorInfo constructor = constructs.First();
+
+                ParameterInfo[] parameters = constructor.GetParameters();
+
+                object[] arguments = new object[parameters.Length];
+
+                for (int i = 0; i < parameters.Length; i++)
+                {
+                    IDependencyDescriptor parameterDescriptor = _sourceCollection.GetDependencyDescriptor(parameters[i].ParameterType);
+
+                    if (parameterDescriptor == null)
+                    {
+                        if (parameters[i].HasDefaultValue)
+                        {
+                            continue;
+                        }
+
+                        throw new DependencyNotFoundException(parameters[i].ParameterType);
+                    }
+
+                    if (descriptor.Lifetime == Lifetime.Singleton && parameterDescriptor.Lifetime != Lifetime.Singleton)
+                    {
+                        throw new SingletonDependencyException(descriptor.Type);
+                    }
+
+                    arguments[i] = GetDependency(parameterDescriptor).Instance;
+                }
+
+                instance = Activator.CreateInstance(descriptor.ImplementationType, arguments);
+            }
+            else
+            {
+                throw new Exception();
+            }
+
+            if (instance == null)
+            {
+                throw new Exception();
+            }
+
+            return descriptor.ToInstance(instance);
+        }
+
+        public bool HasDependency<TDependency>() where TDependency : class
+        {
+            return _sourceCollection.HasDependency<TDependency>();
+        }
+
+        public bool TryGetDependency<TDependency>(out TDependency instance) where TDependency : class
+        {
+            IDependencyDescriptor descriptor = _sourceCollection.GetDependencyDescriptor<TDependency>();
+
+            if (descriptor == null)
+            {
+                instance = null;
+
+                return false;
+            }
+
+            instance = GetDependency(descriptor).Instance<TDependency>();
+
+            return true;
+        }
+
+        public bool TryGetDependencies<TDependency>(out IEnumerable<TDependency> instances) where TDependency : class
+        {
+            List<TDependency> dependencyInstances = new List<TDependency>();
+
+            foreach (IDependencyDescriptor descriptor in _sourceCollection.GetDependencyDescriptors<TDependency>())
+            {
+                TDependency dependencyInstance = GetDependency(descriptor).Instance<TDependency>();
+
+                dependencyInstances.Add(dependencyInstance);
+            }
+
+            if (dependencyInstances.Count == 0)
+            {
+                instances = null;
+
+                return false;
+            }
+
+            instances = dependencyInstances;
+
+            return true;
+        }
+
+        public bool TryGetDependency(Type dependencyType, out object instance)
         {
             IDependencyDescriptor descriptor = _sourceCollection.GetDependencyDescriptor(dependencyType);
 
-            return GetDependency(descriptor);
-        }
-
-        public object GetDependency(IDependencyDescriptor descriptor)
-        {
-            if (descriptor.Lifetime == Lifetime.Singleton)
+            if (descriptor == null)
             {
-                return _sourceCollection.GetSingletonInstance(descriptor, this).Instance;
+                instance = null;
+
+                return false;
             }
 
-            lock (_scopeLock)
-            {
-                if (_scopedInstances.TryGetValue(descriptor.Type, out IDependencyInstance instance))
-                {
-                    return instance.Instance;
-                }
+            instance = GetDependency(descriptor).Instance;
 
-                instance = descriptor.CreateInstance(this);
-
-                // Only scoped are tracked by the Provider so they are added. Transient are not
-                // tracked at all, unless they are disposable.
-                if (instance.Lifetime == Lifetime.Scoped)
-                {
-                    _scopedInstances.Add(descriptor.Type, instance);
-                }
-
-                if (instance.Binding == Binding.Bound && instance.IsDisposable)
-                {
-                    // Track all bound disposable dependencies.
-                    _disposableDependencies.Add(instance);
-                }
-
-                return instance.Instance;
-            }
-        }
-
-        /// <inheritdoc cref="IDependencyProvider.HasDependency{TDependency}"/>
-        public bool HasDependency<TDependency>() where TDependency : class
-        {
-            return HasDependency(typeof(TDependency));
-        }
-
-        public bool HasDependency(Type dependencyType)
-        {
-            return _sourceCollection.HasDependency(dependencyType);
-        }
-
-        /// <inheritdoc cref="IDependencyProvider.TryGetDependency{TDependency}"/>
-        public bool TryGetDependency<TDependency>(out TDependency dependencyInstance) where TDependency : class
-        {
-            bool found = TryGetDependency(typeof(TDependency), out object instance);
-
-            dependencyInstance = (TDependency)instance;
-
-            return found;
-        }
-
-        public bool TryGetDependency(Type dependencyType, out object dependencyInstance)
-        {
-            if (HasDependency(dependencyType))
-            {
-                dependencyInstance = GetDependency(dependencyType);
-
-                return true;
-            }
-
-            dependencyInstance = default;
-
-            return false;
+            return true;
         }
 
         #region IDisposable
@@ -140,7 +252,7 @@ namespace DeltaWare.Dependencies
 
             if (disposing)
             {
-                foreach (IDisposable disposable in _disposableDependencies)
+                foreach (IDisposable disposable in _disposableInstances)
                 {
                     disposable.Dispose();
                 }

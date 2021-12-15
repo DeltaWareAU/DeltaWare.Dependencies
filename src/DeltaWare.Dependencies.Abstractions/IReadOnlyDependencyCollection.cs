@@ -3,14 +3,13 @@ using System.Collections.Generic;
 
 namespace DeltaWare.Dependencies.Abstractions
 {
-    public interface IReadOnlyDependencyCollection : IDisposable
+    public interface IReadOnlyDependencyCollection
     {
-        /// <summary>
-        /// Builds a <see cref="IDependencyProvider"/>.
-        /// </summary>
-        IDependencyProvider BuildProvider();
+        IDependencyScope CreateScope();
 
         IDependencyDescriptor GetDependencyDescriptor<TDependency>() where TDependency : class;
+
+        IDependencyDescriptor GetDependencyDescriptor(Type dependencyType);
 
         IEnumerable<IDependencyDescriptor> GetDependencyDescriptors<TDependency>() where TDependency : class;
 
@@ -19,5 +18,7 @@ namespace DeltaWare.Dependencies.Abstractions
         /// </summary>
         /// <typeparam name="TDependency">Specifies the type of the dependency.</typeparam>
         bool HasDependency<TDependency>() where TDependency : class;
+
+        bool HasDependency(Type dependencyType);
     }
 }

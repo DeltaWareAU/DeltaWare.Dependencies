@@ -1,5 +1,4 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
-using DeltaWare.Dependencies.Abstractions.Exceptions;
 using DeltaWare.Dependencies.Types;
 using System;
 using System.Collections.Generic;
@@ -11,9 +10,6 @@ namespace DeltaWare.Dependencies
     public class DependencyCollection : IDependencyCollection, ICloneable
     {
         private readonly Dictionary<Type, IDependencyDescriptor> _dependencies = new();
-
-        private readonly object _scopeLock = new();
-        private readonly Dictionary<Type, IDependencyInstance> _singletonInstances = new();
 
         public DependencyCollection()
         {
@@ -39,7 +35,7 @@ namespace DeltaWare.Dependencies
 
         public IDependencyDescriptor AddDependency<TDependency>(Lifetime lifetime, Binding binding = Binding.Bound) where TDependency : class
         {
-            IDependencyDescriptor dependencyDescriptor = new DependencyDescriptor<TDependency>(lifetime, binding);
+            IDependencyDescriptor dependencyDescriptor = new DependencyDescriptor(typeof(TDependency), typeof(TDependency), lifetime, binding);
 
             AddDependency(dependencyDescriptor);
 
@@ -54,7 +50,7 @@ namespace DeltaWare.Dependencies
                 throw new ArgumentNullException(nameof(dependency));
             }
 
-            IDependencyDescriptor dependencyDescriptor = new ActionDescriptor<TDependency>(dependency, lifetime, binding);
+            IDependencyDescriptor dependencyDescriptor = new DependencyDescriptor(typeof(TDependency), dependency, lifetime, binding);
 
             AddDependency(dependencyDescriptor);
 
@@ -69,7 +65,7 @@ namespace DeltaWare.Dependencies
                 throw new ArgumentNullException(nameof(dependency));
             }
 
-            IDependencyDescriptor dependencyDescriptor = new ActionDescriptor<TDependency>(dependency, lifetime, binding);
+            IDependencyDescriptor dependencyDescriptor = new DependencyDescriptor(typeof(TDependency), dependency, lifetime, binding);
 
             AddDependency(dependencyDescriptor);
 
@@ -78,17 +74,11 @@ namespace DeltaWare.Dependencies
 
         public IDependencyDescriptor AddDependency<TDependency, TImplementation>(Lifetime lifetime, Binding binding = Binding.Bound) where TImplementation : TDependency where TDependency : class
         {
-            IDependencyDescriptor dependencyDescriptor = new ImplementationDescriptor<TDependency, TImplementation>(lifetime, binding);
+            IDependencyDescriptor dependencyDescriptor = new DependencyDescriptor(typeof(TDependency), typeof(TImplementation), lifetime, binding);
 
             AddDependency(dependencyDescriptor);
 
             return dependencyDescriptor;
-        }
-
-        /// <inheritdoc cref="IDependencyCollection.BuildProvider"/>
-        public IDependencyProvider BuildProvider()
-        {
-            return new DependencyProvider(this);
         }
 
         public object Clone()
@@ -97,17 +87,15 @@ namespace DeltaWare.Dependencies
 
             foreach ((Type key, IDependencyDescriptor value) in _dependencies)
             {
-                if (value is ICloneable cloneable)
-                {
-                    dependencies.Add(key, (IDependencyDescriptor)cloneable.Clone());
-                }
-                else
-                {
-                    dependencies.Add(key, value);
-                }
+                dependencies.Add(key, value);
             }
 
             return new DependencyCollection(dependencies);
+        }
+
+        public IDependencyScope CreateScope()
+        {
+            return new DependencyScope((IReadOnlyDependencyCollection)Clone());
         }
 
         public IDependencyDescriptor GetDependencyDescriptor(Type dependencyType)
@@ -117,7 +105,7 @@ namespace DeltaWare.Dependencies
                 return descriptor;
             }
 
-            throw new DependencyNotFoundException(dependencyType);
+            return null;
         }
 
         public IDependencyDescriptor GetDependencyDescriptor<TDependency>() where TDependency : class
@@ -132,24 +120,6 @@ namespace DeltaWare.Dependencies
                 .Select(d => d.Value);
         }
 
-        public IDependencyInstance GetSingletonInstance(IDependencyDescriptor descriptor, IDependencyProvider provider)
-        {
-            lock (_scopeLock)
-            {
-                if (_singletonInstances.TryGetValue(descriptor.Type, out IDependencyInstance instance))
-                {
-                    return instance;
-                }
-
-                instance = descriptor.CreateInstance(provider);
-
-                _singletonInstances.Add(descriptor.Type, instance);
-
-                return instance;
-            }
-        }
-
-        /// <inheritdoc cref="IDependencyCollection.HasDependency{TDependency}"/>
         public bool HasDependency<TDependency>() where TDependency : class
         {
             return HasDependency(typeof(TDependency));
@@ -182,7 +152,7 @@ namespace DeltaWare.Dependencies
                 throw new ArgumentNullException(nameof(dependency));
             }
 
-            IDependencyDescriptor descriptor = new ActionDescriptor<TDependency>(dependency, lifetime, binding);
+            IDependencyDescriptor descriptor = new DependencyDescriptor(typeof(TDependency), dependency, lifetime, binding);
 
             bool added = TryAddDependency(descriptor);
 
@@ -198,7 +168,7 @@ namespace DeltaWare.Dependencies
                 throw new ArgumentNullException(nameof(dependency));
             }
 
-            IDependencyDescriptor descriptor = new ActionDescriptor<TDependency>(dependency, lifetime, binding);
+            IDependencyDescriptor descriptor = new DependencyDescriptor(typeof(TDependency), dependency, lifetime, binding);
 
             bool added = TryAddDependency(descriptor);
 
@@ -209,7 +179,7 @@ namespace DeltaWare.Dependencies
 
         public bool TryAddDependency<TDependency, TImplementation>(Lifetime lifetime, Binding binding, out IDependencyDescriptor dependencyDescriptor) where TImplementation : TDependency where TDependency : class
         {
-            IDependencyDescriptor descriptor = new ImplementationDescriptor<TDependency, TImplementation>(lifetime, binding);
+            IDependencyDescriptor descriptor = new DependencyDescriptor(typeof(TDependency), typeof(TImplementation), lifetime, binding);
 
             bool added = TryAddDependency(descriptor);
 
@@ -220,7 +190,7 @@ namespace DeltaWare.Dependencies
 
         public bool TryAddDependency<TDependency>(Lifetime lifetime, Binding binding, out IDependencyDescriptor dependencyDescriptor) where TDependency : class
         {
-            IDependencyDescriptor descriptor = new DependencyDescriptor<TDependency>(lifetime, binding);
+            IDependencyDescriptor descriptor = new DependencyDescriptor(typeof(TDependency), typeof(TDependency), lifetime, binding);
 
             bool added = TryAddDependency(descriptor);
 
@@ -228,46 +198,5 @@ namespace DeltaWare.Dependencies
 
             return added;
         }
-
-        #region IDisposable
-
-        private volatile bool _disposed;
-
-        /// <inheritdoc cref="IDisposable.Dispose"/>
-        public void Dispose()
-        {
-            Dispose(true);
-
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Disposes all bound instances of singleton dependencies.
-        /// </summary>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                lock (_scopeLock)
-                {
-                    foreach (IDependencyInstance dependencyInstance in _singletonInstances.Values)
-                    {
-                        if (dependencyInstance.Instance is IDisposable disposable)
-                        {
-                            disposable.Dispose();
-                        }
-                    }
-                }
-            }
-
-            _disposed = true;
-        }
-
-        #endregion IDisposable
     }
 }

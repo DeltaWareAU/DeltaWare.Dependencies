@@ -30,7 +30,8 @@ namespace DeltaWare.Dependencies.Benchmark
 
                 registrationTime += stopwatch.ElapsedTicks;
 
-                var provider = dependencies.BuildProvider();
+                IDependencyScope scope = dependencies.CreateScope();
+                IDependencyProvider provider = scope.BuildProvider();
 
                 stopwatch.Restart();
 
@@ -47,6 +48,8 @@ namespace DeltaWare.Dependencies.Benchmark
                 stopwatch.Stop();
 
                 disposeTime += stopwatch.ElapsedTicks;
+
+                scope.Dispose();
             }
 
             decimal totalTime = registrationTime + buildTime + disposeTime;

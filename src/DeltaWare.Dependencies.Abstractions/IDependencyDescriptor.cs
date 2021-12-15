@@ -12,6 +12,10 @@ namespace DeltaWare.Dependencies.Abstractions
         /// </summary>
         Binding Binding { get; }
 
+        public Func<IDependencyProvider, object> ImplementationFactory { get; }
+        Func<object> ImplementationInstance { get; }
+        public Type ImplementationType { get; }
+
         /// <summary>
         /// Specifies the <see cref="Lifetime"/> of the <see cref="IDependencyDescriptor"/>.
         /// </summary>
@@ -21,13 +25,5 @@ namespace DeltaWare.Dependencies.Abstractions
         /// Specified the <see cref="Type"/> of the <see cref="IDependencyDescriptor"/>,
         /// </summary>
         Type Type { get; }
-
-        /// <summary>
-        /// Gets an instance of the dependency.
-        /// </summary>
-        /// <param name="provider">Specifies the provider used to instantiate the dependency.</param>
-        /// <exception cref="ArgumentNullException">Thrown when a null value is provided.</exception>
-        /// <exception cref="NullReferenceException">Thrown when no instance could be found.</exception>
-        IDependencyInstance CreateInstance(IDependencyProvider provider);
     }
 }
