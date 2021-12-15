@@ -93,26 +93,46 @@ namespace DeltaWare.Dependencies
 
                 for (int i = 0; i < parameters.Length; i++)
                 {
-                    IDependencyDescriptor parameterDescriptor = _sourceCollection.GetDependencyDescriptor(parameters[i].ParameterType);
+                    object paramInstance;
 
-                    if (parameterDescriptor == null)
+                    if (parameters[i].ParameterType == typeof(IDependencyScope))
                     {
-                        if (parameters[i].HasDefaultValue)
+                        paramInstance = _parentScope;
+                    }
+                    else if (parameters[i].ParameterType == typeof(IDependencyProvider))
+                    {
+                        if (descriptor.Lifetime == Lifetime.Singleton)
                         {
-                            continue;
+                            throw new SingletonDependencyException(descriptor.Type);
                         }
 
-                        throw new DependencyNotFoundException(parameters[i].ParameterType);
+                        paramInstance = this;
                     }
-
-                    if (descriptor.Lifetime == Lifetime.Singleton && parameterDescriptor.Lifetime != Lifetime.Singleton)
+                    else
                     {
-                        throw new SingletonDependencyException(descriptor.Type);
+                        IDependencyDescriptor parameterDescriptor = _sourceCollection.GetDependencyDescriptor(parameters[i].ParameterType);
+
+                        if (parameterDescriptor == null)
+                        {
+                            if (parameters[i].HasDefaultValue)
+                            {
+                                continue;
+                            }
+
+                            throw new DependencyNotFoundException(parameters[i].ParameterType);
+                        }
+
+                        if (descriptor.Lifetime == Lifetime.Singleton && parameterDescriptor.Lifetime != Lifetime.Singleton)
+                        {
+                            throw new SingletonDependencyException(descriptor.Type);
+                        }
+
+                        dependencyStack ??= new List<IDependencyDescriptor> { descriptor };
+
+                        paramInstance = GetInstance(parameterDescriptor, dependencyStack).Instance;
                     }
 
-                    dependencyStack ??= new List<IDependencyDescriptor> { descriptor };
-
-                    arguments[i] = GetInstance(parameterDescriptor, dependencyStack).Instance;
+                    arguments[i] = paramInstance;
                 }
 
                 instance = Activator.CreateInstance(descriptor.ImplementationType, arguments);
