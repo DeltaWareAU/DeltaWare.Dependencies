@@ -38,6 +38,8 @@ namespace DeltaWare.Dependencies.Abstractions
 
         void Configure<TDependency>(Action<TDependency> configuration) where TDependency : class;
 
+        void Configure<TDependency>(Action<IDependencyProvider, TDependency> configuration) where TDependency : class;
+
         bool Remove<TDependency>() where TDependency : class;
 
         bool TryAddDependency(IDependencyDescriptor dependencyDescriptor);
