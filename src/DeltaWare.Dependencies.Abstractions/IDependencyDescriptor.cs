@@ -1,4 +1,5 @@
-﻿using DeltaWare.Dependencies.Abstractions.Enums;
+﻿using DeltaWare.Dependencies.Abstractions.Configuration;
+using DeltaWare.Dependencies.Abstractions.Enums;
 using System;
 using System.Collections.Generic;
 
@@ -14,10 +15,7 @@ namespace DeltaWare.Dependencies.Abstractions
         /// </summary>
         Binding Binding { get; }
 
-        /// <summary>
-        /// Provides a collection of <see cref="Action{T}"/> used to configure the Dependency.
-        /// </summary>
-        IReadOnlyList<Action<object>> Configuration { get; }
+        IReadOnlyList<IConfiguration> Configuration { get; }
 
         /// <summary>
         /// Defines how to get an instance of the dependency.
