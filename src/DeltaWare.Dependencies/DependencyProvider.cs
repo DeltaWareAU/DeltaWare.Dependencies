@@ -67,6 +67,14 @@ namespace DeltaWare.Dependencies
             return instance;
         }
 
+        protected virtual void ConfigureInstance(IDependencyDescriptor descriptor, object instance)
+        {
+            foreach (Action<object> configurator in descriptor.Configuration)
+            {
+                configurator.Invoke(instance);
+            }
+        }
+
         protected virtual IDependencyInstance CreateInstance(IDependencyDescriptor descriptor, IStack<IDependencyDescriptor> parentStack)
         {
             object instance;
@@ -147,6 +155,8 @@ namespace DeltaWare.Dependencies
             {
                 throw new Exception();
             }
+
+            ConfigureInstance(descriptor, instance);
 
             return descriptor.ToInstance(instance);
         }
