@@ -8,8 +8,6 @@ namespace DeltaWare.Dependencies.Abstractions
     /// </summary>
     public interface IDependencyCollection : IReadOnlyDependencyCollection
     {
-        void AddDependency(IDependencyDescriptor dependencyDescriptor);
-
         IDependencyDescriptor AddDependency<TDependency>(Lifetime lifetime, Binding binding) where TDependency : class;
 
         /// <summary>
@@ -35,6 +33,10 @@ namespace DeltaWare.Dependencies.Abstractions
         IDependencyDescriptor AddDependency<TDependency>(Func<IDependencyProvider, TDependency> dependency, Lifetime lifetime, Binding binding) where TDependency : class;
 
         IDependencyDescriptor AddDependency<TDependency, TImplementation>(Lifetime lifetime, Binding binding) where TImplementation : TDependency where TDependency : class;
+
+        void AddDependency(IDependencyDescriptor dependencyDescriptor);
+
+        void Configure<TDependency>(Action<TDependency> configuration) where TDependency : class;
 
         bool Remove<TDependency>() where TDependency : class;
 

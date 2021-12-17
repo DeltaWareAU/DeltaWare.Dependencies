@@ -1,5 +1,6 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
 using DeltaWare.Dependencies.Abstractions.Enums;
+using DeltaWare.Dependencies.Abstractions.Exceptions;
 using DeltaWare.Dependencies.Types;
 using System;
 using System.Collections.Generic;
@@ -99,6 +100,18 @@ namespace DeltaWare.Dependencies
             }
 
             return new DependencyCollection(dependencies);
+        }
+
+        public void Configure<TDependency>(Action<TDependency> configuration) where TDependency : class
+        {
+            if (!_dependencies.TryGetValue(typeof(TDependency), out IDependencyDescriptor dependencyDescriptor))
+            {
+                throw new DependencyNotFoundException(typeof(TDependency));
+            }
+
+            DependencyDescriptor descriptor = (DependencyDescriptor)dependencyDescriptor;
+
+            descriptor.AddConfiguration(configuration.Convert());
         }
 
         public IDependencyScope CreateScope()
