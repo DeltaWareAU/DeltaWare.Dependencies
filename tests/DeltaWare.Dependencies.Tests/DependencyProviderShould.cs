@@ -401,7 +401,7 @@ namespace DeltaWare.Dependencies.Tests
 
             using IDependencyProvider provider = Should.NotThrow(scope.BuildProvider);
 
-            Should.Throw<DependencyNotFoundException>(provider.GetDependency<TestDisposable>);
+            Should.Throw<DependencyNotFoundException>(provider.GetRequiredDependency<TestDisposable>);
         }
 
         [Fact]

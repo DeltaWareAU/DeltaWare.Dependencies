@@ -103,7 +103,7 @@ namespace DeltaWare.Dependencies
 
                 if (constructs.Length > 1)
                 {
-                    throw new ArgumentException($"Multiple constructs found for {descriptor.ImplementationType.Name}, only one may exist.");
+                    throw new MultipleDependencyConstructorsException(descriptor.ImplementationType);
                 }
 
                 ConstructorInfo constructor = constructs.First();
@@ -158,12 +158,12 @@ namespace DeltaWare.Dependencies
             }
             else
             {
-                throw new Exception();
+                throw new UnresolvableDependency(descriptor.Type);
             }
 
             if (instance == null)
             {
-                throw new Exception();
+                throw new NullDependencyInstanceException(descriptor.Type);
             }
 
             ConfigureInstance(descriptor, instance);
@@ -191,7 +191,7 @@ namespace DeltaWare.Dependencies
 
             if (instances.Count == 0)
             {
-                throw new DependencyNotFoundException(typeof(TDependency));
+                return new List<TDependency>();
             }
 
             return instances;
@@ -203,7 +203,7 @@ namespace DeltaWare.Dependencies
 
             if (descriptor == null)
             {
-                throw new DependencyNotFoundException(typeof(TDependency));
+                return null;
             }
 
             return GetInstance(descriptor).Instance<TDependency>();
