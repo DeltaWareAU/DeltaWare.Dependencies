@@ -1,5 +1,6 @@
 ﻿using DeltaWare.Dependencies.Abstractions.Enums;
 using System;
+using System.Collections.Generic;
 
 namespace DeltaWare.Dependencies.Abstractions
 {
@@ -12,6 +13,11 @@ namespace DeltaWare.Dependencies.Abstractions
         /// Specifies the <see cref="Binding"/>.
         /// </summary>
         Binding Binding { get; }
+
+        /// <summary>
+        /// Provides a collection of <see cref="Action{T}"/> used to configure the Dependency.
+        /// </summary>
+        IReadOnlyList<Action<object>> Configuration { get; }
 
         /// <summary>
         /// Defines how to get an instance of the dependency.

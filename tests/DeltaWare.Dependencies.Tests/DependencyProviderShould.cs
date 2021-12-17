@@ -2,12 +2,44 @@
 using DeltaWare.Dependencies.Abstractions.Exceptions;
 using DeltaWare.Dependencies.Tests.Types;
 using Shouldly;
+using System;
 using Xunit;
 
 namespace DeltaWare.Dependencies.Tests
 {
     public class DependencyProviderShould
     {
+        [Fact]
+        public void ConfigureDependency()
+        {
+            DateTime testDateTime = new DateTime(2000, 06, 01);
+            int testInteger = 5;
+            string testString = "Look, A wild string has appeared!";
+
+            IDependencyCollection collection = new DependencyCollection();
+
+            collection.AddSingleton<DependencyWithConfigure>();
+            collection.Configure<DependencyWithConfigure>(c =>
+            {
+                c.MyDate = testDateTime;
+            });
+            collection.Configure<DependencyWithConfigure>(c =>
+            {
+                c.MyInt = testInteger;
+                c.MyString = testString;
+            });
+
+            using IDependencyProvider provider = collection.BuildProvider();
+
+            DependencyWithConfigure configureDependency = provider.GetDependency<DependencyWithConfigure>();
+
+            configureDependency.ShouldNotBeNull();
+
+            configureDependency.MyDate.ShouldBe(testDateTime);
+            configureDependency.MyInt.ShouldBe(testInteger);
+            configureDependency.MyString.ShouldBe(testString);
+        }
+
         [Fact]
         public void GetAddedScoped()
         {
