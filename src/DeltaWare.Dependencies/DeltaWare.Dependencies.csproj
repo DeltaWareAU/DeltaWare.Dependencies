@@ -10,7 +10,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Description>Adds Dependency Collection/Provider, enabaling generic dependencies with lifetimes to be added. When a dependency is requested depending on its lifetime it will be instantiated and disposed of.</Description>
-    <Version>5.0.0.2</Version>
+    <Version>5.0.0.4</Version>
     <PackageIcon>nuget_icon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/armorall171/DeltaWare.Dependencies</PackageProjectUrl>
     <RepositoryUrl>https://github.com/armorall171/DeltaWare.Dependencies</RepositoryUrl>
@@ -18,7 +18,9 @@
     <PackageTags>Dependencies; Collection; Generic</PackageTags>
       <IncludeSymbols>true</IncludeSymbols>
       <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-      <PackageReleaseNotes>ADDED - Ability to Configure a Dependency with access to the Provider</PackageReleaseNotes>
+      <PackageReleaseNotes>IMPROVED - Exception Details
+
+CHANGED - GetDependency to Return null instad of throwing an exception</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
