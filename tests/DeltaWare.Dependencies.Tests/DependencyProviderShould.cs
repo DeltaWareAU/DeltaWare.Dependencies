@@ -41,6 +41,43 @@ namespace DeltaWare.Dependencies.Tests
         }
 
         [Fact]
+        public void ConfigureDependencyWithProvider()
+        {
+            string name = "John";
+            int age = 26;
+            DateTime birthDate = new DateTime(1908, 8, 5);
+
+            IDependencyCollection collection = new DependencyCollection();
+
+            collection.AddSingleton<Person>();
+            collection.Configure<Person>(p =>
+            {
+                p.Name = name;
+                p.Age = age;
+                p.BirthDate = birthDate;
+            });
+            collection.AddScoped<DependencyWithConfigure>();
+            collection.Configure<DependencyWithConfigure>((p, c) =>
+            {
+                Person person = p.GetDependency<Person>();
+
+                c.MyString = person.Name;
+                c.MyInt = person.Age;
+                c.MyDate = person.BirthDate;
+            });
+
+            using IDependencyProvider provider = collection.BuildProvider();
+
+            DependencyWithConfigure configureDependency = provider.GetDependency<DependencyWithConfigure>();
+
+            configureDependency.ShouldNotBeNull();
+
+            configureDependency.MyDate.ShouldBe(birthDate);
+            configureDependency.MyInt.ShouldBe(age);
+            configureDependency.MyString.ShouldBe(name);
+        }
+
+        [Fact]
         public void GetAddedScoped()
         {
             TestDisposable disposableA;

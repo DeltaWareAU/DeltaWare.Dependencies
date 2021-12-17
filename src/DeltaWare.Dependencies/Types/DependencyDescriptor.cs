@@ -1,4 +1,5 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
+using DeltaWare.Dependencies.Abstractions.Configuration;
 using DeltaWare.Dependencies.Abstractions.Enums;
 using System;
 using System.Collections.Generic;
@@ -9,10 +10,10 @@ namespace DeltaWare.Dependencies.Types
     [DebuggerDisplay("Type: {Type.Name} | Lifetime: {Lifetime} - Binding: {Binding}")]
     public class DependencyDescriptor : IDependencyDescriptor
     {
-        private readonly List<Action<object>> _configuration = new();
+        private readonly List<IConfiguration> _configuration = new();
 
         public Binding Binding { get; }
-        public IReadOnlyList<Action<object>> Configuration => _configuration;
+        public IReadOnlyList<IConfiguration> Configuration => _configuration;
         public Func<IDependencyProvider, object> ImplementationFactory { get; }
         public Func<object> ImplementationInstance { get; }
         public Type ImplementationType { get; }
@@ -43,7 +44,7 @@ namespace DeltaWare.Dependencies.Types
             Lifetime = lifetime;
         }
 
-        public void AddConfiguration(Action<object> configuration)
+        public void AddConfiguration(IConfiguration configuration)
         {
             _configuration.Add(configuration);
         }

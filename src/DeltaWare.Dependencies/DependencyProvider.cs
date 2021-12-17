@@ -1,4 +1,5 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
+using DeltaWare.Dependencies.Abstractions.Configuration;
 using DeltaWare.Dependencies.Abstractions.Enums;
 using DeltaWare.Dependencies.Abstractions.Exceptions;
 using DeltaWare.Dependencies.Abstractions.Stack;
@@ -69,9 +70,18 @@ namespace DeltaWare.Dependencies
 
         protected virtual void ConfigureInstance(IDependencyDescriptor descriptor, object instance)
         {
-            foreach (Action<object> configurator in descriptor.Configuration)
+            foreach (IConfiguration configuration in descriptor.Configuration)
             {
-                configurator.Invoke(instance);
+                switch (configuration)
+                {
+                    case ITypeConfiguration typeConfiguration:
+                        typeConfiguration.Configurator.Invoke(instance);
+                        break;
+
+                    case IProviderConfiguration providerConfiguration:
+                        providerConfiguration.Configurator.Invoke(this, instance);
+                        break;
+                }
             }
         }
 
