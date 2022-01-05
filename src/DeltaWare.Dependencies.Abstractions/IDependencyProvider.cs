@@ -10,14 +10,14 @@ namespace DeltaWare.Dependencies.Abstractions
     {
         IDependencyScope CreateScope();
 
-        IEnumerable<TDependency> GetDependencies<TDependency>() where TDependency : class;
+        IEnumerable<object> GetDependencies(Type dependencyType);
 
-        TDependency GetDependency<TDependency>() where TDependency : class;
+        object GetDependency(Type dependencyType);
 
-        bool HasDependency<TDependency>() where TDependency : class;
+        bool HasDependency(Type dependencyType);
 
-        bool TryGetDependencies<TDependency>(out IEnumerable<TDependency> instances) where TDependency : class;
+        bool TryGetDependencies(Type dependencyType, out IEnumerable<object> instances);
 
-        bool TryGetDependency<TDependency>(out TDependency instance) where TDependency : class;
+        bool TryGetDependency(Type dependencyType, out object instance);
     }
 }
