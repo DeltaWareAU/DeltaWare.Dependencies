@@ -142,21 +142,11 @@ namespace DeltaWare.Dependencies
             return null;
         }
 
-        public IDependencyDescriptor GetDependencyDescriptor<TDependency>() where TDependency : class
-        {
-            return GetDependencyDescriptor(typeof(TDependency));
-        }
-
-        public IEnumerable<IDependencyDescriptor> GetDependencyDescriptors<TDependency>() where TDependency : class
+        public IEnumerable<IDependencyDescriptor> GetDependencyDescriptors(Type dependencyType)
         {
             return _dependencies
-                .Where(d => d.Key.GetInterfaces().Contains(typeof(TDependency)))
+                .Where(d => d.Key.GetInterfaces().Contains(dependencyType))
                 .Select(d => d.Value);
-        }
-
-        public bool HasDependency<TDependency>() where TDependency : class
-        {
-            return HasDependency(typeof(TDependency));
         }
 
         public bool HasDependency(Type dependencyType)
