@@ -10,7 +10,7 @@
     <Product>DeltaWare.Dependencies</Product>
     <Copyright>Copyright (c) 2020 Bradley Clarke</Copyright>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <Version>5.0.0.3</Version>
+    <Version>5.0.0.4</Version>
     <Description>Abtractions for DeltaWare.Dependencies</Description>
     <PackageIcon>nuget_icon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/armorall171/DeltaWare.Dependencies</PackageProjectUrl>
@@ -19,7 +19,8 @@
     <PackageTags>Dependencies; Collection; Generic; Abstraction</PackageTags>
       <IncludeSymbols>true</IncludeSymbols>
       <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-      <PackageReleaseNotes>ADDED - IServiceProvider.GetRequiredDependency</PackageReleaseNotes>
+      <PackageReleaseNotes>REWORKED - ServiceProvider signature, moved generic defnitions to extension methods.
+REWORKED - DependencyCollection signature, moved generic defintions to extension methods.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
