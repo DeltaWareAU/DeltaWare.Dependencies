@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 
 namespace DeltaWare.Dependencies
 {
@@ -66,26 +67,6 @@ namespace DeltaWare.Dependencies
                         providerConfiguration.Configurator.Invoke(this, instance);
                         break;
                 }
-            }
-        }
-
-        protected void RegisterInstance(IDependencyInstance instance)
-        {
-            if (instance.Lifetime == Lifetime.Singleton)
-            {
-                _parentScope.RegisterInstance(instance);
-
-                return;
-            }
-
-            if (instance.Lifetime == Lifetime.Scoped)
-            {
-                _scopedInstances.Add(instance.Type, instance);
-            }
-
-            if (instance.IsDisposable && instance.Binding == Binding.Bound)
-            {
-                _disposableInstances.Add(instance);
             }
         }
 
@@ -188,21 +169,58 @@ namespace DeltaWare.Dependencies
                 parentStack.EnsureNoCircularDependencies();
             }
 
-            if (descriptor.Lifetime == Lifetime.Singleton && _parentScope.TryGetInstance(descriptor, out IDependencyInstance instance))
+            try
             {
-                return instance;
+                IDependencyInstance instance;
+
+                if (descriptor.Lifetime == Lifetime.Singleton)
+                {
+                    Monitor.Enter(_parentScope);
+
+                    if (_parentScope.TryGetInstance(descriptor, out instance))
+                    {
+                        return instance;
+                    }
+                }
+
+                if (descriptor.Lifetime == Lifetime.Scoped && TryGetInstance(descriptor, out instance))
+                {
+                    return instance;
+                }
+
+                return CreateInstance();
+            }
+            finally
+            {
+                if (descriptor.Lifetime == Lifetime.Singleton)
+                {
+                    Monitor.Exit(_parentScope);
+                }
             }
 
-            if (descriptor.Lifetime == Lifetime.Scoped && TryGetInstance(descriptor, out instance))
+            IDependencyInstance CreateInstance()
             {
+                IDependencyInstance instance = InternalCreateInstance(descriptor, parentStack);
+
+                if (instance.Lifetime == Lifetime.Singleton)
+                {
+                    _parentScope.RegisterInstance(instance);
+                }
+                else
+                {
+                    if (instance.Lifetime == Lifetime.Scoped)
+                    {
+                        _scopedInstances.Add(instance.Type, instance);
+                    }
+
+                    if (instance.IsDisposable && instance.Binding == Binding.Bound)
+                    {
+                        _disposableInstances.Add(instance);
+                    }
+                }
+
                 return instance;
             }
-
-            instance = InternalCreateInstance(descriptor, parentStack);
-
-            RegisterInstance(instance);
-
-            return instance;
         }
 
         #endregion Instantiation
