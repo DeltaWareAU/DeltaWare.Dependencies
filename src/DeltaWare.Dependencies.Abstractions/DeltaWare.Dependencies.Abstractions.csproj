@@ -10,10 +10,11 @@
     <Product>DeltaWare.Dependencies</Product>
     <Copyright>Copyright (c) 2020 Bradley Clarke</Copyright>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <Version>5.0.0.4</Version>
+    <Version>6.0.0.1</Version>
     <Description>Abtractions for DeltaWare.Dependencies</Description>
     <PackageIcon>nuget_icon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/armorall171/DeltaWare.Dependencies</PackageProjectUrl>
+      <PackageOutputPath>..\..\nuget.packages</PackageOutputPath>
     <RepositoryUrl>https://github.com/armorall171/DeltaWare.Dependencies</RepositoryUrl>
     <RepositoryType>GIT</RepositoryType>
     <PackageTags>Dependencies; Collection; Generic; Abstraction</PackageTags>
