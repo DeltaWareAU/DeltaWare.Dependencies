@@ -1,4 +1,5 @@
 ﻿using DeltaWare.Dependencies.Abstractions.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -61,6 +62,38 @@ namespace DeltaWare.Dependencies.Abstractions
             }
 
             instance = (TDependency)objectInstance;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Instantiates an instance of the specified <see cref="Type"/>.
+        /// </summary>
+        /// <remarks>This is intended for instantiating an unregistered <see cref="Type"/>. The instance is <strong>Scoped</strong> and <strong>Bound</strong> to the <see cref="IDependencyProvider"/>.</remarks>
+        /// <typeparam name="T">The <see cref="Type"/> to be instantiated.</typeparam>
+        /// <returns>A new instance of the specified <see cref="Type"/> or <see langword="null"/> if it could not be instantiated.</returns>
+        public static T CreateInstance<T>(this IDependencyProvider provider) where T : class
+        {
+            return (T)provider.CreateInstance(typeof(T));
+        }
+
+        /// <summary>
+        /// Instantiates an instance of the specified <see cref="Type"/>.
+        /// </summary>
+        /// <remarks>This is intended for instantiating an unregistered <see cref="Type"/>. The instance is <strong>Scoped</strong> and <strong>Bound</strong> to the <see cref="IDependencyProvider"/>.</remarks>
+        /// <typeparam name="T">The <see cref="Type"/> to be instantiated.</typeparam>
+        /// <param name="instance">An instance of the specified <see cref="Type"/>.</param>
+        /// <returns><see langword="true"/> if an instance was instantiated or <see langword="false"/> if an instance could not be instantiated.</returns>
+        public static bool TryCreateInstance<T>(this IDependencyProvider provider, out T instance) where T : class
+        {
+            if (!provider.TryCreateInstance(typeof(T), out object objectInstance))
+            {
+                instance = null;
+
+                return false;
+            }
+
+            instance = (T)objectInstance;
 
             return true;
         }

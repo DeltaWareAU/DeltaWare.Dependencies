@@ -418,5 +418,53 @@ namespace DeltaWare.Dependencies.Tests
 
             Should.Throw<SingletonDependencyException>(provider.GetDependency<TestDependency>);
         }
+
+        [Fact]
+        public void InstantiateUnregisteredDependency()
+        {
+            IDependencyCollection collection = new DependencyCollection();
+
+            int intValue = 171;
+            string stringValue = "Hello World";
+
+            collection.AddScoped(() => new TestDisposable
+            {
+                IntValue = intValue,
+                StringValue = stringValue
+            });
+            collection.AddScoped<TestDependency>();
+
+            using IDependencyScope scope = collection.CreateScope();
+
+            using IDependencyProvider provider = Should.NotThrow(scope.BuildProvider);
+
+            UnregisteredDependency unregistered = Should.NotThrow(provider.CreateInstance<UnregisteredDependency>);
+
+            unregistered.IsDisposed.ShouldBeFalse();
+
+            unregistered.Dependency.TestDisposable.IntValue.ShouldBe(intValue);
+            unregistered.Dependency.TestDisposable.StringValue.ShouldBe(stringValue);
+            unregistered.Dependency.TestDisposable.IsDisposed.ShouldBeFalse();
+
+            provider.Dispose();
+            
+            unregistered.IsDisposed.ShouldBeTrue();
+            unregistered.Dependency.TestDisposable.IsDisposed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void ThrowSingletonDependencyExceptionInstantiateUnregistered()
+        {
+            IDependencyCollection collection = new DependencyCollection();
+
+            collection.AddScoped<TestDisposable>();
+            collection.AddSingleton<TestDependency>();
+
+            using IDependencyScope scope = collection.CreateScope();
+
+            using IDependencyProvider provider = Should.NotThrow(scope.BuildProvider);
+
+            Should.Throw<SingletonDependencyException>(provider.CreateInstance<UnregisteredDependency>);
+        }
     }
 }
