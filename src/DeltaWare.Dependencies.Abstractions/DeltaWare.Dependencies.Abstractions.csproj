@@ -10,7 +10,7 @@
     <Product>DeltaWare.Dependencies</Product>
     <Copyright>Copyright (c) 2020 Bradley Clarke</Copyright>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <Version>6.0.0.2</Version>
+    <Version>5.0.0.5</Version>
     <Description>Abtractions for DeltaWare.Dependencies</Description>
     <PackageIcon>nuget_icon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/armorall171/DeltaWare.Dependencies</PackageProjectUrl>
