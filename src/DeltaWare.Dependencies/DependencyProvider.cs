@@ -5,6 +5,7 @@ using DeltaWare.Dependencies.Abstractions.Exceptions;
 using DeltaWare.Dependencies.Abstractions.Stack;
 using DeltaWare.Dependencies.Extensions;
 using DeltaWare.Dependencies.Stack;
+using DeltaWare.Dependencies.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -285,6 +286,22 @@ namespace DeltaWare.Dependencies
         public bool TryGetDependency(Type dependencyType, out object instance)
         {
             instance = GetDependency(dependencyType);
+
+            return instance != null;
+        }
+
+        /// <inheritdoc/>
+        public object CreateInstance(Type type)
+        {
+            IDependencyDescriptor descriptor = new DependencyDescriptor(type, type, Lifetime.Scoped);
+
+            return InternalGetInstance(descriptor).Instance;
+        }
+
+        /// <inheritdoc/>
+        public bool TryCreateInstance(Type type, out object instance)
+        {
+            instance = GetDependency(type);
 
             return instance != null;
         }
