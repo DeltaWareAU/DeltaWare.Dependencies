@@ -2,7 +2,7 @@
 
 namespace DeltaWare.Dependencies.Tests.Types
 {
-    internal class UnregisteredDependency: IDisposable
+    internal class UnregisteredDependency : IDisposable
     {
         public TestDependency Dependency { get; }
 

@@ -447,7 +447,7 @@ namespace DeltaWare.Dependencies.Tests
             unregistered.Dependency.TestDisposable.IsDisposed.ShouldBeFalse();
 
             provider.Dispose();
-            
+
             unregistered.IsDisposed.ShouldBeTrue();
             unregistered.Dependency.TestDisposable.IsDisposed.ShouldBeTrue();
         }

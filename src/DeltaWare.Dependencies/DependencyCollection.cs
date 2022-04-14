@@ -1,8 +1,9 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
+using DeltaWare.Dependencies.Abstractions.Descriptors;
 using DeltaWare.Dependencies.Abstractions.Enums;
 using DeltaWare.Dependencies.Abstractions.Exceptions;
 using DeltaWare.Dependencies.Configuration;
-using DeltaWare.Dependencies.Types;
+using DeltaWare.Dependencies.Descriptors;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -40,7 +41,7 @@ namespace DeltaWare.Dependencies
 
         public IDependencyDescriptor AddDependency<TDependency>(Lifetime lifetime, Binding binding = Binding.Bound) where TDependency : class
         {
-            IDependencyDescriptor dependencyDescriptor = new DependencyDescriptor(typeof(TDependency), typeof(TDependency), lifetime, binding);
+            IDependencyDescriptor dependencyDescriptor = new TypeDependencyDescriptor(typeof(TDependency), typeof(TDependency), lifetime, binding);
 
             AddDependency(dependencyDescriptor);
 
@@ -55,7 +56,7 @@ namespace DeltaWare.Dependencies
                 throw new ArgumentNullException(nameof(dependency));
             }
 
-            IDependencyDescriptor dependencyDescriptor = new DependencyDescriptor(typeof(TDependency), dependency, lifetime, binding);
+            IDependencyDescriptor dependencyDescriptor = new InstanceDependencyDescriptor(typeof(TDependency), dependency, lifetime, binding);
 
             AddDependency(dependencyDescriptor);
 
@@ -70,7 +71,7 @@ namespace DeltaWare.Dependencies
                 throw new ArgumentNullException(nameof(dependency));
             }
 
-            IDependencyDescriptor dependencyDescriptor = new DependencyDescriptor(typeof(TDependency), dependency, lifetime, binding);
+            IDependencyDescriptor dependencyDescriptor = new ImplementationDependencyDescriptor(typeof(TDependency), dependency, lifetime, binding);
 
             AddDependency(dependencyDescriptor);
 
@@ -79,7 +80,7 @@ namespace DeltaWare.Dependencies
 
         public IDependencyDescriptor AddDependency<TDependency, TImplementation>(Lifetime lifetime, Binding binding = Binding.Bound) where TImplementation : TDependency where TDependency : class
         {
-            IDependencyDescriptor dependencyDescriptor = new DependencyDescriptor(typeof(TDependency), typeof(TImplementation), lifetime, binding);
+            IDependencyDescriptor dependencyDescriptor = new TypeDependencyDescriptor(typeof(TDependency), typeof(TImplementation), lifetime, binding);
 
             AddDependency(dependencyDescriptor);
 
@@ -110,7 +111,7 @@ namespace DeltaWare.Dependencies
                 throw new DependencyNotFoundException(typeof(TDependency));
             }
 
-            DependencyDescriptor descriptor = (DependencyDescriptor)dependencyDescriptor;
+            DependencyDescriptorBase descriptor = (DependencyDescriptorBase)dependencyDescriptor;
 
             descriptor.AddConfiguration(new TypeConfiguration<TDependency>(configuration));
         }
@@ -122,7 +123,7 @@ namespace DeltaWare.Dependencies
                 throw new DependencyNotFoundException(typeof(TDependency));
             }
 
-            DependencyDescriptor descriptor = (DependencyDescriptor)dependencyDescriptor;
+            DependencyDescriptorBase descriptor = (DependencyDescriptorBase)dependencyDescriptor;
 
             descriptor.AddConfiguration(new ProviderConfiguration<TDependency>(configuration));
         }
@@ -176,7 +177,7 @@ namespace DeltaWare.Dependencies
                 throw new ArgumentNullException(nameof(dependency));
             }
 
-            IDependencyDescriptor descriptor = new DependencyDescriptor(typeof(TDependency), dependency, lifetime, binding);
+            IDependencyDescriptor descriptor = new InstanceDependencyDescriptor(typeof(TDependency), dependency, lifetime, binding);
 
             bool added = TryAddDependency(descriptor);
 
@@ -192,7 +193,7 @@ namespace DeltaWare.Dependencies
                 throw new ArgumentNullException(nameof(dependency));
             }
 
-            IDependencyDescriptor descriptor = new DependencyDescriptor(typeof(TDependency), dependency, lifetime, binding);
+            IDependencyDescriptor descriptor = new ImplementationDependencyDescriptor(typeof(TDependency), dependency, lifetime, binding);
 
             bool added = TryAddDependency(descriptor);
 
@@ -203,7 +204,7 @@ namespace DeltaWare.Dependencies
 
         public bool TryAddDependency<TDependency, TImplementation>(Lifetime lifetime, Binding binding, out IDependencyDescriptor dependencyDescriptor) where TImplementation : TDependency where TDependency : class
         {
-            IDependencyDescriptor descriptor = new DependencyDescriptor(typeof(TDependency), typeof(TImplementation), lifetime, binding);
+            IDependencyDescriptor descriptor = new TypeDependencyDescriptor(typeof(TDependency), typeof(TImplementation), lifetime, binding);
 
             bool added = TryAddDependency(descriptor);
 
@@ -214,7 +215,7 @@ namespace DeltaWare.Dependencies
 
         public bool TryAddDependency<TDependency>(Lifetime lifetime, Binding binding, out IDependencyDescriptor dependencyDescriptor) where TDependency : class
         {
-            IDependencyDescriptor descriptor = new DependencyDescriptor(typeof(TDependency), typeof(TDependency), lifetime, binding);
+            IDependencyDescriptor descriptor = new TypeDependencyDescriptor(typeof(TDependency), typeof(TDependency), lifetime, binding);
 
             bool added = TryAddDependency(descriptor);
 

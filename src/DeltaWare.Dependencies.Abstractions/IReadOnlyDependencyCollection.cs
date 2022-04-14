@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DeltaWare.Dependencies.Abstractions.Descriptors;
+using System;
 using System.Collections.Generic;
 
 namespace DeltaWare.Dependencies.Abstractions

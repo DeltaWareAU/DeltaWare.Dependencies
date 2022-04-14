@@ -1,10 +1,9 @@
-﻿using DeltaWare.Dependencies.Abstractions;
-using DeltaWare.Dependencies.Abstractions.Enums;
+﻿using DeltaWare.Dependencies.Abstractions.Enums;
 using System;
 using System.Diagnostics;
 using System.Linq;
 
-namespace DeltaWare.Dependencies.Types
+namespace DeltaWare.Dependencies.Abstractions
 {
     /// <inheritdoc cref="IDependencyInstance"/>
     [DebuggerDisplay("Type: {Type.Name} | Lifetime: {Lifetime} - Binding: {Binding}")]

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using DeltaWare.Dependencies.Abstractions.Descriptors;
+using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
 namespace DeltaWare.Dependencies.Abstractions

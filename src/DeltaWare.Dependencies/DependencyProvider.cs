@@ -1,11 +1,8 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
-using DeltaWare.Dependencies.Abstractions.Configuration;
+using DeltaWare.Dependencies.Abstractions.Descriptors;
 using DeltaWare.Dependencies.Abstractions.Enums;
 using DeltaWare.Dependencies.Abstractions.Exceptions;
-using DeltaWare.Dependencies.Abstractions.Stack;
-using DeltaWare.Dependencies.Extensions;
-using DeltaWare.Dependencies.Stack;
-using DeltaWare.Dependencies.Types;
+using DeltaWare.Dependencies.Descriptors;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -54,93 +51,62 @@ namespace DeltaWare.Dependencies
             return _scopedInstances.TryGetValue(descriptor.Type, out instance);
         }
 
-        protected virtual void ConfigureInstance(IDependencyDescriptor descriptor, object instance)
+        private void ArgumentsBuilder(IDependencyDescriptor descriptor, ParameterInfo[] parameters, object[] arguments, DependencyCallStack callStack)
         {
-            foreach (IConfiguration configuration in descriptor.Configuration)
+            for (int i = 0; i < parameters.Length; i++)
             {
-                switch (configuration)
-                {
-                    case ITypeConfiguration typeConfiguration:
-                        typeConfiguration.Configurator.Invoke(instance);
-                        break;
+                object paramInstance;
 
-                    case IProviderConfiguration providerConfiguration:
-                        providerConfiguration.Configurator.Invoke(this, instance);
-                        break;
+                if (parameters[i].ParameterType == typeof(IDependencyScope))
+                {
+                    paramInstance = _parentScope;
                 }
+                else if (parameters[i].ParameterType == typeof(IDependencyProvider))
+                {
+                    if (descriptor.Lifetime == Lifetime.Singleton)
+                    {
+                        throw new SingletonDependencyException(descriptor.Type);
+                    }
+
+                    paramInstance = this;
+                }
+                else
+                {
+                    IDependencyDescriptor parameterDescriptor = _sourceCollection.GetDependencyDescriptor(parameters[i].ParameterType);
+
+                    if (parameterDescriptor == null)
+                    {
+                        if (parameters[i].HasDefaultValue)
+                        {
+                            continue;
+                        }
+
+                        throw new DependencyNotFoundException(parameters[i].ParameterType);
+                    }
+
+                    if (descriptor.Lifetime == Lifetime.Singleton && parameterDescriptor.Lifetime != Lifetime.Singleton)
+                    {
+                        throw new SingletonDependencyException(descriptor.Type);
+                    }
+
+                    paramInstance = InternalGetInstance(parameterDescriptor, callStack).Instance;
+                }
+
+                arguments[i] = paramInstance;
             }
         }
 
-        private IDependencyInstance InternalCreateInstance(IDependencyDescriptor descriptor, IStack<IDependencyDescriptor> parentStack)
+        private IDependencyInstance InternalCreateInstance(IDependencyDescriptor descriptor, DependencyCallStack callStack)
         {
-            object instance;
+            IDependencyInstance instance;
 
-            if (descriptor.ImplementationFactory != null)
+            if (descriptor is IInstanceDescriptor instanceDescriptor)
             {
-                instance = descriptor.ImplementationFactory.Invoke(this);
+                instance = instanceDescriptor.CreateInstance(this);
             }
-            else if (descriptor.ImplementationInstance != null)
+            else if (descriptor is IParameterDescriptor parameterDescriptor)
             {
-                instance = descriptor.ImplementationInstance.Invoke();
-            }
-            else if (descriptor.ImplementationType != null)
-            {
-                ConstructorInfo[] constructs = descriptor.ImplementationType.GetConstructors();
-
-                if (constructs.Length > 1)
-                {
-                    throw new MultipleDependencyConstructorsException(descriptor.ImplementationType);
-                }
-
-                ConstructorInfo constructor = constructs.First();
-
-                ParameterInfo[] parameters = constructor.GetParameters();
-
-                object[] arguments = new object[parameters.Length];
-
-                for (int i = 0; i < parameters.Length; i++)
-                {
-                    object paramInstance;
-
-                    if (parameters[i].ParameterType == typeof(IDependencyScope))
-                    {
-                        paramInstance = _parentScope;
-                    }
-                    else if (parameters[i].ParameterType == typeof(IDependencyProvider))
-                    {
-                        if (descriptor.Lifetime == Lifetime.Singleton)
-                        {
-                            throw new SingletonDependencyException(descriptor.Type);
-                        }
-
-                        paramInstance = this;
-                    }
-                    else
-                    {
-                        IDependencyDescriptor parameterDescriptor = _sourceCollection.GetDependencyDescriptor(parameters[i].ParameterType);
-
-                        if (parameterDescriptor == null)
-                        {
-                            if (parameters[i].HasDefaultValue)
-                            {
-                                continue;
-                            }
-
-                            throw new DependencyNotFoundException(parameters[i].ParameterType);
-                        }
-
-                        if (descriptor.Lifetime == Lifetime.Singleton && parameterDescriptor.Lifetime != Lifetime.Singleton)
-                        {
-                            throw new SingletonDependencyException(descriptor.Type);
-                        }
-
-                        paramInstance = InternalGetInstance(parameterDescriptor, parentStack).Instance;
-                    }
-
-                    arguments[i] = paramInstance;
-                }
-
-                instance = Activator.CreateInstance(descriptor.ImplementationType, arguments);
+                instance = parameterDescriptor.CreateInstance(this, (parameters, arguments) => ArgumentsBuilder(parameterDescriptor, parameters, arguments, callStack));
             }
             else
             {
@@ -152,22 +118,20 @@ namespace DeltaWare.Dependencies
                 throw new NullDependencyInstanceException(descriptor.Type);
             }
 
-            ConfigureInstance(descriptor, instance);
-
-            return descriptor.ToInstance(instance);
+            return instance;
         }
 
-        private IDependencyInstance InternalGetInstance(IDependencyDescriptor descriptor, IStack<IDependencyDescriptor> parentStack)
+        private IDependencyInstance InternalGetInstance(IDependencyDescriptor descriptor, DependencyCallStack callStack)
         {
-            if (parentStack == null)
+            if (callStack == null)
             {
-                parentStack = new DependencyStack(descriptor);
+                callStack = new DependencyCallStack(descriptor);
             }
             else
             {
-                parentStack = parentStack.CreateChild(descriptor);
+                callStack = (DependencyCallStack)callStack.AddChild(descriptor);
 
-                parentStack.EnsureNoCircularDependencies();
+                callStack.EnsureNoCircularDependencies();
             }
 
             try
@@ -201,7 +165,7 @@ namespace DeltaWare.Dependencies
 
             IDependencyInstance CreateInstance()
             {
-                IDependencyInstance instance = InternalCreateInstance(descriptor, parentStack);
+                IDependencyInstance instance = InternalCreateInstance(descriptor, callStack);
 
                 if (instance.Lifetime == Lifetime.Singleton)
                 {
@@ -293,7 +257,7 @@ namespace DeltaWare.Dependencies
         /// <inheritdoc/>
         public object CreateInstance(Type type)
         {
-            IDependencyDescriptor descriptor = new DependencyDescriptor(type, type, Lifetime.Scoped);
+            IDependencyDescriptor descriptor = new TypeDependencyDescriptor(type, type, Lifetime.Scoped);
 
             return InternalGetInstance(descriptor).Instance;
         }
