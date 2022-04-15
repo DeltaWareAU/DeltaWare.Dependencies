@@ -35,4 +35,8 @@ REWORKED - DependencyCollection signature, moved generic defintions to extension
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Descriptors\Builder\" />
+  </ItemGroup>
+
 </Project>

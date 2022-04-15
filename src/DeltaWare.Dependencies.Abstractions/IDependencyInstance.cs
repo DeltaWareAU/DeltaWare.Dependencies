@@ -1,5 +1,5 @@
-﻿using DeltaWare.Dependencies.Abstractions.Enums;
-using System;
+﻿using System;
+using DeltaWare.Dependencies.Abstractions.Descriptors.Enums;
 
 namespace DeltaWare.Dependencies.Abstractions
 {

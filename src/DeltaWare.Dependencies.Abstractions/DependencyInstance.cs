@@ -1,4 +1,4 @@
-﻿using DeltaWare.Dependencies.Abstractions.Enums;
+﻿using DeltaWare.Dependencies.Abstractions.Descriptors.Enums;
 using System;
 using System.Diagnostics;
 using System.Linq;

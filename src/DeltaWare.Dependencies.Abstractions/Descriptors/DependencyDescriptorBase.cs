@@ -1,8 +1,8 @@
-﻿using DeltaWare.Dependencies.Abstractions.Configuration;
-using DeltaWare.Dependencies.Abstractions.Enums;
+﻿using DeltaWare.Dependencies.Abstractions.Descriptors.Enums;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using DeltaWare.Dependencies.Abstractions.Configuration;
 
 namespace DeltaWare.Dependencies.Abstractions.Descriptors
 {
@@ -11,33 +11,17 @@ namespace DeltaWare.Dependencies.Abstractions.Descriptors
     {
         private readonly List<IConfiguration> _configuration = new();
 
-        public Binding Binding { get; }
+        public Binding Binding { get; internal set; }
 
-        public Lifetime Lifetime { get; }
+        public Lifetime Lifetime { get; internal set; }
 
-        public Type Type { get; }
-
-        protected DependencyDescriptorBase(Type type, Lifetime lifetime, Binding binding = Binding.Bound)
-        {
-            Type = type ?? throw new ArgumentNullException(nameof(type));
-            Binding = binding;
-            Lifetime = lifetime;
-        }
-
+        public Type Type { get; internal set; }
+        
         protected virtual void ConfigureInstance(IDependencyProvider provider, object instance)
         {
             foreach (IConfiguration configuration in _configuration)
             {
-                switch (configuration)
-                {
-                    case ITypeConfiguration typeConfiguration:
-                        typeConfiguration.Configurator.Invoke(instance);
-                        break;
-
-                    case IProviderConfiguration providerConfiguration:
-                        providerConfiguration.Configurator.Invoke(provider, instance);
-                        break;
-                }
+                configuration.Configurator.Invoke(provider, instance);
             }
         }
 
