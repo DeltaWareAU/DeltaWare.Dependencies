@@ -1,11 +1,13 @@
 ﻿using DeltaWare.Dependencies.Abstractions.Registration;
+using System;
 
 namespace DeltaWare.Dependencies.Abstractions
 {
     public interface IDependencyCollection
     {
-        IRegistrationBuilder<TReference> Register<TReference>();
+        IRegistrationDefinition<TReference> Register<TReference>(Func<TReference> builder);
+        IRegistrationDefinition<TReference> Register<TReference>(Func<IDependencyProvider, TReference> builder);
 
-        IRegistrationBuilder<TImplementation> RegisterType<TImplementation>();
+        IRegistrationDefinition<TImplementation> Register<TImplementation>();
     }
 }

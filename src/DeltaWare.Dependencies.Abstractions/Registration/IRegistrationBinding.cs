@@ -1,7 +1,7 @@
 ﻿namespace DeltaWare.Dependencies.Abstractions.Registration
 {
-    public interface IRegistrationBinding
+    public interface IRegistrationBinding<out TImplementation> : IRegistrationInitialization<TImplementation>
     {
-        void DoNotBind();
+        IRegistrationInitialization<TImplementation> DoNotBind();
     }
 }

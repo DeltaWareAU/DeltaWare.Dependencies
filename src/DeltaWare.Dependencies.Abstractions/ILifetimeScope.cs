@@ -2,9 +2,9 @@
 
 namespace DeltaWare.Dependencies.Abstractions
 {
-    public interface IDependencyProvider
+    public interface ILifetimeScope : IDisposable
     {
-        object GetDependency(Type type);
+        IDependencyProvider BuildProvider();
 
         ILifetimeScope CreateScope();
     }

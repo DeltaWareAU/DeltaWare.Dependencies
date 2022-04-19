@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DeltaWare.Dependencies.Abstractions.Descriptors.Enums
+﻿namespace DeltaWare.Dependencies.Abstractions.Descriptor.Enums
 {
     /// <summary>
     /// Defines if the dependency is disposed of at the end of its lifetime.

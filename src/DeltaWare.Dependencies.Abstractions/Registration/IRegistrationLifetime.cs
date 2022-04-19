@@ -1,11 +1,11 @@
 ﻿namespace DeltaWare.Dependencies.Abstractions.Registration
 {
-    public interface IRegistrationLifetime
+    public interface IRegistrationLifetime<out TImplementation>
     {
-        IRegistrationBinding AsSingleton();
+        IRegistrationBinding<TImplementation> AsSingleton();
 
-        IRegistrationBinding AsScoped();
+        IRegistrationBinding<TImplementation> AsScoped();
 
-        IRegistrationBinding AsTransient();
+        IRegistrationBinding<TImplementation> AsTransient();
     }
 }
