@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace DeltaWare.Dependencies
 {
-    internal sealed class LifetimeScope : ILifetimeScope
+    internal class LifetimeScope : ILifetimeScope
     {
         private readonly LifetimeScope _parentScope;
 
@@ -31,9 +31,7 @@ namespace DeltaWare.Dependencies
 
         public IDependencyProvider BuildProvider()
         {
-            IDependencyProvider provider = new DependencyProvider(_dependencyResolver, (LifetimeScope)CreateScope());
-
-            return provider;
+            return new DependencyProvider(_dependencyResolver, (LifetimeScope)CreateScope());
         }
 
         public ILifetimeScope CreateScope()

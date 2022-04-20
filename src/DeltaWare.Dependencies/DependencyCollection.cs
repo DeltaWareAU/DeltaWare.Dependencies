@@ -3,24 +3,35 @@ using DeltaWare.Dependencies.Abstractions.Registration;
 using DeltaWare.Dependencies.Descriptors;
 using DeltaWare.Dependencies.Registrations;
 using System;
+using System.Collections.Generic;
+using DeltaWare.Dependencies.Abstractions.Descriptor;
 
 namespace DeltaWare.Dependencies
 {
     public class DependencyCollection : IDependencyCollection
     {
+        private readonly List<DependencyDescriptorBase> _dependencies = new();
+
         public IRegistrationDefinition<TImplementation> Register<TImplementation>(Func<TImplementation> builder)
         {
-            return new RegistrationBuilder<TImplementation>(new ReferenceDependencyDescriptor(_ => builder.Invoke()));
+            return Register<TImplementation>(new ReferenceDependencyDescriptor(_ => builder.Invoke()));
         }
 
         public IRegistrationDefinition<TImplementation> Register<TImplementation>(Func<IDependencyProvider, TImplementation> builder)
         {
-            return new RegistrationBuilder<TImplementation>(new ReferenceDependencyDescriptor(p => builder.Invoke(p)));
+            return Register<TImplementation>(new ReferenceDependencyDescriptor(p => builder.Invoke(p)));
         }
 
         public IRegistrationDefinition<TImplementation> Register<TImplementation>()
         {
-            return new RegistrationBuilder<TImplementation>(new TypeDependencyDescriptor(typeof(TImplementation)));
+            return Register<TImplementation>(new TypeDependencyDescriptor(typeof(TImplementation)));
+        }
+
+        protected virtual IRegistrationDefinition<TImplementation> Register<TImplementation>(DependencyDescriptorBase dependency)
+        {
+            _dependencies.Add(dependency);
+
+            return new RegistrationBuilder<TImplementation>(dependency);
         }
     }
 }

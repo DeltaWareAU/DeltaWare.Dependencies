@@ -27,13 +27,8 @@ namespace DeltaWare.Dependencies.Descriptors
         {
             return _innerProvider.InternalGetDependency(type);
         }
-
-        public ILifetimeScope CreateScope()
-        {
-            return _innerProvider.CreateScope();
-        }
-
-        public DependencyProviderCallStack CreateChild(IDependencyDescriptor descriptor)
+        
+        internal DependencyProviderCallStack CreateChild(IDependencyDescriptor descriptor)
         {
             if (descriptor == null)
             {

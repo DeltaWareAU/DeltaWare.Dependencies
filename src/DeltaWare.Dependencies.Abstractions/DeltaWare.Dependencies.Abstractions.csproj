@@ -25,6 +25,12 @@ REWORKED - DependencyCollection signature, moved generic defintions to extension
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Stack\**" />
+    <EmbeddedResource Remove="Stack\**" />
+    <None Remove="Stack\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="..\..\LICENSE.md">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
@@ -33,10 +39,6 @@ REWORKED - DependencyCollection signature, moved generic defintions to extension
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Stack\" />
   </ItemGroup>
 
 </Project>

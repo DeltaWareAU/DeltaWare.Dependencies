@@ -6,26 +6,26 @@ using System;
 
 namespace DeltaWare.Dependencies
 {
-    internal sealed class DependencyProvider : IDependencyProvider
+    internal class DependencyProvider : IDependencyProvider, IDisposable
     {
         private readonly IDependencyResolver _dependencyResolver;
 
-        private readonly LifetimeScope _lifetimeScope;
+        private readonly LifetimeScope _providerScope;
 
-        public DependencyProvider(IDependencyResolver dependencyResolver, LifetimeScope lifetimeScope)
+        private readonly object _concurrencyLock = new();
+
+        public DependencyProvider(IDependencyResolver dependencyResolver, LifetimeScope providerScope)
         {
             _dependencyResolver = dependencyResolver ?? throw new ArgumentNullException(nameof(dependencyResolver));
-            _lifetimeScope = lifetimeScope ?? throw new ArgumentNullException(nameof(lifetimeScope));
+            _providerScope = providerScope ?? throw new ArgumentNullException(nameof(providerScope));
         }
 
         public object GetDependency(Type type)
         {
-            return InternalGetDependency(type);
-        }
-
-        public ILifetimeScope CreateScope()
-        {
-            return _lifetimeScope.CreateScope();
+            lock (_concurrencyLock)
+            {
+                return InternalGetDependency(type);
+            }
         }
 
         internal object InternalGetDependency(Type type, DependencyProviderCallStack providerCallStack = null)
@@ -46,7 +46,7 @@ namespace DeltaWare.Dependencies
                 providerCallStack = providerCallStack.CreateChild(dependency);
             }
 
-            if (_lifetimeScope.TryGetInstance(dependency, out IDependencyInstance instance))
+            if (_providerScope.TryGetInstance(dependency, out IDependencyInstance instance))
             {
                 return instance.Instance;
             }
@@ -58,9 +58,31 @@ namespace DeltaWare.Dependencies
                 throw NullDependencyInstanceException.NullInstance(type);
             }
 
-            _lifetimeScope.RegisterInstance(instance);
+            _providerScope.RegisterInstance(instance);
 
             return instance.Instance;
         }
+
+        #region IDisposable
+
+        private volatile bool _disposed;
+
+        /// <inheritdoc cref="IDisposable.Dispose"/>
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _providerScope.Dispose();
+
+            _disposed = true;
+
+            GC.SuppressFinalize(this);
+        }
+
+
+        #endregion IDisposable
     }
 }

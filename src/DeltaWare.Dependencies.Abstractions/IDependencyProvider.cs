@@ -5,7 +5,13 @@ namespace DeltaWare.Dependencies.Abstractions
     public interface IDependencyProvider
     {
         object GetDependency(Type type);
+    }
 
-        ILifetimeScope CreateScope();
+    public static class DependencyProviderExtensions
+    {
+        public static T GetDependency<T>(this IDependencyProvider provider)
+        {
+            return (T)provider.GetDependency(typeof(T));
+        }
     }
 }
