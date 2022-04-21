@@ -1,6 +1,7 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
 using DeltaWare.Dependencies.Abstractions.Descriptor;
 using DeltaWare.Dependencies.Abstractions.Descriptor.Enums;
+using DeltaWare.Dependencies.Resolver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace DeltaWare.Dependencies
 {
     internal class LifetimeScope : ILifetimeScope
     {
-        private readonly LifetimeScope _parentScope;
+        public LifetimeScope ParentScope { get; }
 
         private readonly List<LifetimeScope> _childScopes = new();
 
@@ -17,26 +18,35 @@ namespace DeltaWare.Dependencies
 
         private readonly List<IDependencyInstance> _scopedInstances = new();
 
-        private readonly IDependencyResolver _dependencyResolver;
+        public IDependencyResolver Resolver { get; }
 
         public LifetimeScope(IDependencyResolver dependencyResolver)
         {
-            _dependencyResolver = dependencyResolver ?? throw new ArgumentNullException(nameof(dependencyResolver));
+            Resolver = new LifetimeScopeResolver(this, dependencyResolver);
         }
 
         private LifetimeScope(IDependencyResolver dependencyResolver, LifetimeScope parentScope) : this(dependencyResolver)
         {
-            _parentScope = parentScope ?? throw new ArgumentNullException(nameof(parentScope));
+            ParentScope = parentScope ?? throw new ArgumentNullException(nameof(parentScope));
         }
 
         public IDependencyProvider BuildProvider()
         {
-            return new DependencyProvider(_dependencyResolver, (LifetimeScope)CreateScope());
+            var scope = InternalCreateScope();
+
+            var provider = new DependencyProvider(scope);
+
+            return provider;
         }
 
         public ILifetimeScope CreateScope()
         {
-            var childScope = new LifetimeScope(_dependencyResolver, this);
+            return InternalCreateScope();
+        }
+
+        private LifetimeScope InternalCreateScope()
+        {
+            var childScope = new LifetimeScope(Resolver, this);
 
             _childScopes.Add(childScope);
 
@@ -45,9 +55,9 @@ namespace DeltaWare.Dependencies
 
         public bool TryGetInstance(IDependencyDescriptor descriptor, out IDependencyInstance instance)
         {
-            if (_parentScope != null && descriptor.Lifetime == Lifetime.Singleton)
+            if (ParentScope != null && descriptor.Lifetime == Lifetime.Singleton)
             {
-                return TryGetInstance(descriptor, out instance);
+                return ParentScope.TryGetInstance(descriptor, out instance);
             }
 
             instance = _scopedInstances.FirstOrDefault(i => i.Descriptor == descriptor);
@@ -57,9 +67,9 @@ namespace DeltaWare.Dependencies
 
         public void RegisterInstance(IDependencyInstance instance)
         {
-            if (_parentScope != null && instance.Descriptor.Lifetime == Lifetime.Singleton)
+            if (ParentScope != null && instance.Descriptor.Lifetime == Lifetime.Singleton)
             {
-                _parentScope.RegisterInstance(instance);
+                ParentScope.RegisterInstance(instance);
 
                 return;
             }

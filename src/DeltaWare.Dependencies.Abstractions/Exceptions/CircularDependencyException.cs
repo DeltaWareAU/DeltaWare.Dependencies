@@ -5,7 +5,7 @@ namespace DeltaWare.Dependencies.Abstractions.Exceptions
 {
     public class CircularDependencyException : Exception
     {
-        public CircularDependencyException(IDependencyDescriptor type) : base($"Circular dependencies found for {type.DefinitionType.Name}")
+        public CircularDependencyException(IDependencyDescriptor type) : base($"Circular dependencies found for {type.ImplementationType.Name}")
         {
         }
     }

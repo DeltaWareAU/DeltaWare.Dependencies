@@ -18,9 +18,14 @@ namespace DeltaWare.Dependencies.Descriptors
 
         public Binding Binding { get; internal set; } = Binding.Bound;
 
-        public Lifetime Lifetime { get; internal set; } = Lifetime.Scoped;
+        public Lifetime Lifetime { get; internal set; } = Lifetime.Transient;
 
-        public Type DefinitionType { get; internal set; }
+        public Type ImplementationType { get; }
+
+        protected DependencyDescriptorBase(Type implementationType)
+        {
+            ImplementationType = implementationType ?? throw new ArgumentNullException(nameof(implementationType));
+        }
 
         public IDependencyInstance CreateInstance(IDependencyProvider provider)
         {

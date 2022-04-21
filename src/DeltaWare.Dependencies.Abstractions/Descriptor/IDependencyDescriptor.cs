@@ -15,7 +15,7 @@ namespace DeltaWare.Dependencies.Abstractions.Descriptor
         /// </summary>
         Lifetime Lifetime { get; }
 
-        Type DefinitionType { get; }
+        public Type ImplementationType { get; }
 
         IDependencyInstance CreateInstance(IDependencyProvider provider);
     }

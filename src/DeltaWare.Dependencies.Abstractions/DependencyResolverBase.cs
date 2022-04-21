@@ -17,6 +17,18 @@ namespace DeltaWare.Dependencies.Abstractions
             return InnerResolver?.GetDependency(definition);
         }
 
+        public bool HasDependency(Type definition)
+        {
+            if (InnerHasDependency(definition))
+            {
+                return true;
+            }
+
+            return InnerResolver.HasDependency(definition);
+        }
+
         protected abstract bool TryGetDependency(Type definition, out IDependencyDescriptor descriptor);
+
+        protected abstract bool InnerHasDependency(Type definition);
     }
 }

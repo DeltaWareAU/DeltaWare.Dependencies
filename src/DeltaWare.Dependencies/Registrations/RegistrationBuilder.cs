@@ -11,22 +11,22 @@ namespace DeltaWare.Dependencies.Registrations
     {
         private readonly DependencyDescriptorBase _dependencyDescriptor;
 
-        public RegistrationBuilder(DependencyDescriptorBase dependencyDescriptor)
+        private readonly DependencyCollection _dependencyCollection;
+
+        private readonly bool _overrideDescriptor;
+
+        public RegistrationBuilder(DependencyCollection dependencyCollection, DependencyDescriptorBase dependencyDescriptor, bool overrideDescriptor)
         {
+            _dependencyCollection = dependencyCollection ?? throw new ArgumentNullException(nameof(dependencyCollection));
             _dependencyDescriptor = dependencyDescriptor ?? throw new ArgumentNullException(nameof(dependencyDescriptor));
-            _dependencyDescriptor.DefinitionType = typeof(TImplementation);
+            _overrideDescriptor = overrideDescriptor;
+
+            Register(typeof(TImplementation));
         }
 
-        public IRegistrationLifetime<TImplementation> DefineAs<TDefinition>()
+        public IRegistrationDefinition<TImplementation> DefineAs<TDefinition>() where TDefinition : TImplementation
         {
-            Type definitionType = typeof(TDefinition);
-
-            if (!_dependencyDescriptor.DefinitionType.IsAssignableFrom(definitionType))
-            {
-                throw new ArgumentException();
-            }
-
-            _dependencyDescriptor.DefinitionType = definitionType;
+            Register(typeof(TDefinition));
 
             return this;
         }
@@ -40,14 +40,14 @@ namespace DeltaWare.Dependencies.Registrations
 
         public IRegistrationBinding<TImplementation> AsScoped()
         {
-            _dependencyDescriptor.Lifetime = Lifetime.Singleton;
+            _dependencyDescriptor.Lifetime = Lifetime.Scoped;
 
             return this;
         }
 
         public IRegistrationBinding<TImplementation> AsTransient()
         {
-            _dependencyDescriptor.Lifetime = Lifetime.Singleton;
+            _dependencyDescriptor.Lifetime = Lifetime.Transient;
 
             return this;
         }
@@ -67,6 +67,18 @@ namespace DeltaWare.Dependencies.Registrations
         public void OnInitialization(Action<IDependencyProvider, TImplementation> onInitialization)
         {
             _dependencyDescriptor.AddConfiguration(new ProviderConfiguration<TImplementation>(onInitialization));
+        }
+
+        private void Register(Type definition)
+        {
+            if (_overrideDescriptor)
+            {
+                _dependencyCollection.InternalRegister(definition, _dependencyDescriptor);
+            }
+            else
+            {
+                _dependencyCollection.InternalTryRegister(definition, _dependencyDescriptor);
+            }
         }
     }
 }

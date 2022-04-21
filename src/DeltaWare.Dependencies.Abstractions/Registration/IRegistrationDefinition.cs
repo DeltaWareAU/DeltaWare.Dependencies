@@ -1,7 +1,7 @@
 ﻿namespace DeltaWare.Dependencies.Abstractions.Registration
 {
-    public interface IRegistrationDefinition<out TImplementation> : IRegistrationLifetime<TImplementation>
+    public interface IRegistrationDefinition<TImplementation> : IRegistrationLifetime<TImplementation>
     {
-        IRegistrationLifetime<TImplementation> DefineAs<TDefinition>();
+        IRegistrationDefinition<TImplementation> DefineAs<TDefinition>() where TDefinition : TImplementation;
     }
 }

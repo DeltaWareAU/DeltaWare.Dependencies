@@ -30,7 +30,7 @@ namespace DeltaWare.Dependencies.Benchmark
 
                 registrationTime += stopwatch.ElapsedTicks;
 
-                IDependencyScope scope = dependencies.CreateScope();
+                ILifetimeScope scope = dependencies.CreateScope();
                 IDependencyProvider provider = scope.BuildProvider();
 
                 stopwatch.Restart();

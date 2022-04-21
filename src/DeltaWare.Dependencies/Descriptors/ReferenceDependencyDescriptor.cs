@@ -7,7 +7,7 @@ namespace DeltaWare.Dependencies.Descriptors
     {
         private readonly Func<IDependencyProvider, object> _referenceBuilder;
 
-        public ReferenceDependencyDescriptor(Func<IDependencyProvider, object> referenceBuilder)
+        public ReferenceDependencyDescriptor(Type implementationType, Func<IDependencyProvider, object> referenceBuilder) : base(implementationType)
         {
             _referenceBuilder = referenceBuilder ?? throw new ArgumentNullException(nameof(referenceBuilder));
         }

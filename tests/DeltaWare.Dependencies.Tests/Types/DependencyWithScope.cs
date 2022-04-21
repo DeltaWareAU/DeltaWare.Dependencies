@@ -4,9 +4,9 @@ namespace DeltaWare.Dependencies.Tests.Types
 {
     public class DependencyWithScope
     {
-        public IDependencyScope Scope { get; }
+        public ILifetimeScope Scope { get; }
 
-        public DependencyWithScope(IDependencyScope scope)
+        public DependencyWithScope(ILifetimeScope scope)
         {
             Scope = scope;
         }

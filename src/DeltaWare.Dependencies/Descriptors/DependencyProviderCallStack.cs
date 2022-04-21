@@ -23,11 +23,21 @@ namespace DeltaWare.Dependencies.Descriptors
             _dependencyStack = dependencyStack ?? throw new ArgumentNullException(nameof(dependencyStack));
         }
 
-        public object GetDependency(Type type)
+        public object GetDependency(Type definition)
         {
-            return _innerProvider.InternalGetDependency(type);
+            return _innerProvider.InternalGetDependency(definition, this);
         }
-        
+
+        public object CreateInstance(Type definition)
+        {
+            return _innerProvider.CreateInstance(definition);
+        }
+
+        public bool HasDependency(Type definition)
+        {
+            return _innerProvider.HasDependency(definition);
+        }
+
         internal DependencyProviderCallStack CreateChild(IDependencyDescriptor descriptor)
         {
             if (descriptor == null)
@@ -37,9 +47,30 @@ namespace DeltaWare.Dependencies.Descriptors
 
             DependencyStack childStack = _dependencyStack.CreateChild(descriptor);
 
+            childStack.EnsureParentNotSingleton();
             childStack.EnsureNoCircularDependencies();
 
             return new DependencyProviderCallStack(_innerProvider, childStack);
         }
+
+        #region IDisposable
+
+        private bool _disposed = false;
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _innerProvider?.Dispose();
+
+            _disposed = true;
+
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
     }
 }

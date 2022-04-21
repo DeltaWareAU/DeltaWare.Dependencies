@@ -2,11 +2,12 @@
 using DeltaWare.Dependencies.Abstractions.Descriptor;
 using DeltaWare.Dependencies.Abstractions.Exceptions;
 using DeltaWare.Dependencies.Descriptors;
+using DeltaWare.Dependencies.Resolver;
 using System;
 
 namespace DeltaWare.Dependencies
 {
-    internal class DependencyProvider : IDependencyProvider, IDisposable
+    internal class DependencyProvider : IDependencyProvider
     {
         private readonly IDependencyResolver _dependencyResolver;
 
@@ -14,18 +15,33 @@ namespace DeltaWare.Dependencies
 
         private readonly object _concurrencyLock = new();
 
-        public DependencyProvider(IDependencyResolver dependencyResolver, LifetimeScope providerScope)
+        public DependencyProvider(LifetimeScope providerScope)
         {
-            _dependencyResolver = dependencyResolver ?? throw new ArgumentNullException(nameof(dependencyResolver));
             _providerScope = providerScope ?? throw new ArgumentNullException(nameof(providerScope));
+            _dependencyResolver = new DependencyProviderResolver(this, providerScope.Resolver);
         }
 
-        public object GetDependency(Type type)
+        public object GetDependency(Type definition)
         {
             lock (_concurrencyLock)
             {
-                return InternalGetDependency(type);
+                return InternalGetDependency(definition);
             }
+        }
+
+        public object CreateInstance(Type definition)
+        {
+            lock (_concurrencyLock)
+            {
+                IDependencyDescriptor descriptor = _dependencyResolver.GetDependency(definition) ?? new TypeDependencyDescriptor(definition);
+
+                return InternalGetDependency(descriptor);
+            }
+        }
+
+        public bool HasDependency(Type definition)
+        {
+            return _dependencyResolver.HasDependency(definition);
         }
 
         internal object InternalGetDependency(Type type, DependencyProviderCallStack providerCallStack = null)
@@ -37,6 +53,10 @@ namespace DeltaWare.Dependencies
                 return null;
             }
 
+            return InternalGetDependency(dependency, providerCallStack);
+        }
+        internal object InternalGetDependency(IDependencyDescriptor dependency, DependencyProviderCallStack providerCallStack = null)
+        {
             if (providerCallStack == null)
             {
                 providerCallStack = new DependencyProviderCallStack(this, dependency);
@@ -55,7 +75,7 @@ namespace DeltaWare.Dependencies
 
             if (instance == null)
             {
-                throw NullDependencyInstanceException.NullInstance(type);
+                throw NullDependencyInstanceException.NullInstance(dependency.ImplementationType);
             }
 
             _providerScope.RegisterInstance(instance);

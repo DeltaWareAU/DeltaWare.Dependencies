@@ -9,11 +9,12 @@ namespace DeltaWare.Dependencies.Descriptors
 {
     internal sealed class TypeDependencyDescriptor : DependencyDescriptorBase
     {
-        private readonly Type _implementationType;
-
-        public TypeDependencyDescriptor(Type implementationType)
+        public TypeDependencyDescriptor(Type implementationType) : base(implementationType)
         {
-            _implementationType = implementationType ?? throw new ArgumentNullException(nameof(implementationType));
+            if (implementationType.IsAbstract || implementationType.IsInterface)
+            {
+                throw new ArgumentException();
+            }
         }
 
         protected override object InternalCreateInstance(IDependencyProvider provider)
@@ -33,18 +34,18 @@ namespace DeltaWare.Dependencies.Descriptors
                         continue;
                     }
 
-                    NullDependencyInstanceException.NullInstance(parameters[i].ParameterType);
+                    throw NullDependencyInstanceException.NullInstance(parameters[i].ParameterType);
                 }
 
                 arguments[i] = argument;
             }
 
-            return Activator.CreateInstance(_implementationType, arguments);
+            return Activator.CreateInstance(ImplementationType, arguments);
         }
 
         private ParameterInfo[] GetConstructorParameters()
         {
-            ConstructorInfo[] constructors = _implementationType.GetConstructors();
+            ConstructorInfo[] constructors = ImplementationType.GetConstructors();
 
             if (constructors.Length > 1)
             {
@@ -59,7 +60,7 @@ namespace DeltaWare.Dependencies.Descriptors
 
                     if (injectionConstructor != null)
                     {
-                        throw MultipleDependencyConstructorsException.MultipleInjectAttribute(_implementationType);
+                        throw MultipleDependencyConstructorsException.MultipleInjectAttribute(ImplementationType);
                     }
 
                     injectionConstructor = constructor;
@@ -67,7 +68,7 @@ namespace DeltaWare.Dependencies.Descriptors
 
                 if (injectionConstructor == null)
                 {
-                    throw MultipleDependencyConstructorsException.MultipleConstructors(_implementationType);
+                    throw MultipleDependencyConstructorsException.MultipleConstructors(ImplementationType);
                 }
 
                 return injectionConstructor.GetParameters();

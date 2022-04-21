@@ -1,4 +1,5 @@
 ﻿using DeltaWare.Dependencies.Abstractions.Descriptor;
+using DeltaWare.Dependencies.Abstractions.Descriptor.Enums;
 using DeltaWare.Dependencies.Abstractions.Exceptions;
 using System;
 using System.Collections.Generic;
@@ -31,6 +32,19 @@ namespace DeltaWare.Dependencies.Stack
             Children.Add(childNode);
 
             return childNode;
+        }
+
+        public void EnsureParentNotSingleton()
+        {
+            if (Value.Lifetime == Lifetime.Singleton || ParentStack == null)
+            {
+                return;
+            }
+
+            if (ParentStack.Value.Lifetime == Lifetime.Singleton)
+            {
+                throw new SingletonDependencyException(ParentStack.Value.ImplementationType);
+            }
         }
 
         public void EnsureNoCircularDependencies()

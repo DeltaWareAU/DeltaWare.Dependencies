@@ -7,5 +7,7 @@ namespace DeltaWare.Dependencies.Abstractions
         IDependencyProvider BuildProvider();
 
         ILifetimeScope CreateScope();
+
+        IDependencyResolver Resolver { get; }
     }
 }

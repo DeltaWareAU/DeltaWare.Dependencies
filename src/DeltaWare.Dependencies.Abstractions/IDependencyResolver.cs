@@ -5,6 +5,8 @@ namespace DeltaWare.Dependencies.Abstractions
 {
     public interface IDependencyResolver
     {
-        public IDependencyDescriptor GetDependency(Type definition);
+        IDependencyDescriptor GetDependency(Type definition);
+
+        bool HasDependency(Type definition);
     }
 }

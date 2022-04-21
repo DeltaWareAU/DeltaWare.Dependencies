@@ -235,7 +235,7 @@ namespace DeltaWare.Dependencies.Tests
         {
             IDependencyCollection collection = new DependencyCollection();
 
-            using IDependencyScope scope = collection.CreateScope();
+            using ILifetimeScope scope = collection.CreateScope();
 
             using IDependencyProvider provider = Should.NotThrow(scope.BuildProvider);
 
