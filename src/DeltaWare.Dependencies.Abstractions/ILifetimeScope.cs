@@ -1,4 +1,5 @@
 ﻿using System;
+using DeltaWare.Dependencies.Abstractions.Resolver;
 
 namespace DeltaWare.Dependencies.Abstractions
 {

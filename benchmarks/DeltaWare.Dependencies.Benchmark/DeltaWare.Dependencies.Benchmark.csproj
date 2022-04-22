@@ -6,6 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BetterConsoleTables" Version="1.1.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\DeltaWare.SDK\src\DeltaWare.SDK.Benchmarking\DeltaWare.SDK.Benchmarking.csproj" />
     <ProjectReference Include="..\..\src\DeltaWare.Dependencies\DeltaWare.Dependencies.csproj" />
   </ItemGroup>
 

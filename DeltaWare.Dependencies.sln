@@ -15,6 +15,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Benchmarks", "Benchmarks", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaWare.Dependencies.Benchmark", "benchmarks\DeltaWare.Dependencies.Benchmark\DeltaWare.Dependencies.Benchmark.csproj", "{21CA3B45-37A5-4352-86DE-8BC6E0B110C4}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaWare.SDK.Benchmarking", "..\DeltaWare.SDK\src\DeltaWare.SDK.Benchmarking\DeltaWare.SDK.Benchmarking.csproj", "{6E35EA9B-216E-40BE-83C3-992278E5A8CE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +39,10 @@ Global
 		{21CA3B45-37A5-4352-86DE-8BC6E0B110C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{21CA3B45-37A5-4352-86DE-8BC6E0B110C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{21CA3B45-37A5-4352-86DE-8BC6E0B110C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E35EA9B-216E-40BE-83C3-992278E5A8CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E35EA9B-216E-40BE-83C3-992278E5A8CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E35EA9B-216E-40BE-83C3-992278E5A8CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E35EA9B-216E-40BE-83C3-992278E5A8CE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

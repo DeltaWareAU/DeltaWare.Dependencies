@@ -7,6 +7,7 @@ using DeltaWare.Dependencies.Registrations;
 using DeltaWare.Dependencies.Resolver;
 using System;
 using System.Collections.Generic;
+using DeltaWare.Dependencies.Abstractions.Resolver;
 
 namespace DeltaWare.Dependencies
 {

@@ -1,7 +1,7 @@
-﻿using DeltaWare.Dependencies.Abstractions.Descriptor;
-using System;
+﻿using System;
+using DeltaWare.Dependencies.Abstractions.Descriptor;
 
-namespace DeltaWare.Dependencies.Abstractions
+namespace DeltaWare.Dependencies.Abstractions.Resolver
 {
     public abstract class DependencyResolverBase : IDependencyResolver
     {

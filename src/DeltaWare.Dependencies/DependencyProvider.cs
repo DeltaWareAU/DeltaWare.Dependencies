@@ -4,6 +4,7 @@ using DeltaWare.Dependencies.Abstractions.Exceptions;
 using DeltaWare.Dependencies.Descriptors;
 using DeltaWare.Dependencies.Resolver;
 using System;
+using DeltaWare.Dependencies.Abstractions.Resolver;
 
 namespace DeltaWare.Dependencies
 {
