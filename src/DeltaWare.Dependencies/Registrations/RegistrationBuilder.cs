@@ -9,75 +9,82 @@ namespace DeltaWare.Dependencies.Registrations
 {
     internal class RegistrationBuilder<TImplementation> : IRegistrationBuilder<TImplementation>
     {
-        private readonly DependencyDescriptorBase _dependencyDescriptor;
+        private readonly DependencyDescriptorBase _descriptor;
 
         private readonly DependencyCollection _dependencyCollection;
 
         private readonly bool _overrideDescriptor;
 
-        public RegistrationBuilder(DependencyCollection dependencyCollection, DependencyDescriptorBase dependencyDescriptor, bool overrideDescriptor)
+        public RegistrationBuilder(DependencyCollection collection, DependencyDescriptorBase descriptor, bool overrideDescriptor)
         {
-            _dependencyCollection = dependencyCollection ?? throw new ArgumentNullException(nameof(dependencyCollection));
-            _dependencyDescriptor = dependencyDescriptor ?? throw new ArgumentNullException(nameof(dependencyDescriptor));
+            _dependencyCollection = collection ?? throw new ArgumentNullException(nameof(collection));
+            _descriptor = descriptor ?? throw new ArgumentNullException(nameof(descriptor));
             _overrideDescriptor = overrideDescriptor;
 
             Register(typeof(TImplementation));
         }
 
-        public IRegistrationDefinition<TImplementation> DefineAs<TDefinition>() where TDefinition : TImplementation
+        public IRegistrationDefinition<TImplementation> DefineAs<TDefinition>()
         {
-            Register(typeof(TDefinition));
+            Type definition = typeof(TDefinition);
+
+            if (!definition.IsAssignableFrom(_descriptor.ImplementationType))
+            {
+                throw new Exception($"Cannot assign the implementing type {_descriptor.ImplementationType.Name} to the defining type {definition.Name}");
+            }
+
+            Register(definition);
 
             return this;
         }
 
         public IRegistrationBinding<TImplementation> AsSingleton()
         {
-            _dependencyDescriptor.Lifetime = Lifetime.Singleton;
+            _descriptor.Lifetime = Lifetime.Singleton;
 
             return this;
         }
 
         public IRegistrationBinding<TImplementation> AsScoped()
         {
-            _dependencyDescriptor.Lifetime = Lifetime.Scoped;
+            _descriptor.Lifetime = Lifetime.Scoped;
 
             return this;
         }
 
         public IRegistrationBinding<TImplementation> AsTransient()
         {
-            _dependencyDescriptor.Lifetime = Lifetime.Transient;
+            _descriptor.Lifetime = Lifetime.Transient;
 
             return this;
         }
 
         public IRegistrationInitialization<TImplementation> DoNotBind()
         {
-            _dependencyDescriptor.Binding = Binding.Unbound;
+            _descriptor.Binding = Binding.Unbound;
 
             return this;
         }
 
         public void OnInitialization(Action<TImplementation> onInitialization)
         {
-            _dependencyDescriptor.AddConfiguration(new InstanceConfiguration<TImplementation>(onInitialization));
+            _descriptor.AddConfiguration(new InstanceConfiguration<TImplementation>(onInitialization));
         }
 
         public void OnInitialization(Action<IDependencyProvider, TImplementation> onInitialization)
         {
-            _dependencyDescriptor.AddConfiguration(new ProviderConfiguration<TImplementation>(onInitialization));
+            _descriptor.AddConfiguration(new ProviderConfiguration<TImplementation>(onInitialization));
         }
 
         private void Register(Type definition)
         {
             if (_overrideDescriptor)
             {
-                _dependencyCollection.InternalRegister(definition, _dependencyDescriptor);
+                _dependencyCollection.InternalRegister(definition, _descriptor);
             }
             else
             {
-                _dependencyCollection.InternalTryRegister(definition, _dependencyDescriptor);
+                _dependencyCollection.InternalTryRegister(definition, _descriptor);
             }
         }
     }

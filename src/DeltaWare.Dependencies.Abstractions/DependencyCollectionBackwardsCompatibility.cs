@@ -10,7 +10,7 @@ namespace DeltaWare.Dependencies.Abstractions
         #region Transient
 
         [Obsolete("This has been replace with the Register FluentApi")]
-        public static void AddTransient<TImplementation, TDefinition>(this IDependencyCollection collection, Binding binding = Binding.Bound) where TDefinition : TImplementation
+        public static void AddTransient<TDefinition, TImplementation>(this IDependencyCollection collection, Binding binding = Binding.Bound) where TImplementation : TDefinition
         {
             collection.Register<TImplementation>()
                     .DefineAs<TDefinition>()
@@ -19,7 +19,7 @@ namespace DeltaWare.Dependencies.Abstractions
         }
 
         [Obsolete("This has been replace with the Register FluentApi")]
-        public static void AddTransient<TImplementation, TDefinition>(this IDependencyCollection collection, Func<TImplementation> builder, Binding binding = Binding.Bound) where TDefinition : TImplementation
+        public static void AddTransient<TDefinition, TImplementation>(this IDependencyCollection collection, Func<TImplementation> builder, Binding binding = Binding.Bound) where TImplementation : TDefinition
         {
             collection.Register(builder)
                      .DefineAs<TDefinition>()
@@ -28,7 +28,7 @@ namespace DeltaWare.Dependencies.Abstractions
         }
 
         [Obsolete("This has been replace with the Register FluentApi")]
-        public static void AddTransient<TImplementation, TDefinition>(this IDependencyCollection collection, Func<IDependencyProvider, TImplementation> builder, Binding binding = Binding.Bound) where TDefinition : TImplementation
+        public static void AddTransient<TDefinition, TImplementation>(this IDependencyCollection collection, Func<IDependencyProvider, TImplementation> builder, Binding binding = Binding.Bound) where TImplementation : TDefinition
         {
             collection.Register(builder)
                     .DefineAs<TDefinition>()
@@ -61,7 +61,7 @@ namespace DeltaWare.Dependencies.Abstractions
         }
 
         [Obsolete("This has been replace with the Register FluentApi")]
-        public static bool TryAddTransient<TImplementation, TDefinition>(this IDependencyCollection collection, Binding binding = Binding.Bound) where TDefinition : TImplementation
+        public static bool TryAddTransient<TDefinition, TImplementation>(this IDependencyCollection collection, Binding binding = Binding.Bound) where TImplementation : TDefinition
         {
             return collection.CheckIfAdded<TDefinition>(c =>
             {
@@ -73,7 +73,7 @@ namespace DeltaWare.Dependencies.Abstractions
         }
 
         [Obsolete("This has been replace with the Register FluentApi")]
-        public static bool TryAddTransient<TImplementation, TDefinition>(this IDependencyCollection collection, Func<TImplementation> builder, Binding binding = Binding.Bound) where TDefinition : TImplementation
+        public static bool TryAddTransient<TDefinition, TImplementation>(this IDependencyCollection collection, Func<TImplementation> builder, Binding binding = Binding.Bound) where TImplementation : TDefinition
         {
             return collection.CheckIfAdded<TDefinition>(c =>
             {
@@ -85,7 +85,7 @@ namespace DeltaWare.Dependencies.Abstractions
         }
 
         [Obsolete("This has been replace with the Register FluentApi")]
-        public static bool TryAddTransient<TImplementation, TDefinition>(this IDependencyCollection collection, Func<IDependencyProvider, TImplementation> builder, Binding binding = Binding.Bound) where TDefinition : TImplementation
+        public static bool TryAddTransient<TDefinition, TImplementation>(this IDependencyCollection collection, Func<IDependencyProvider, TImplementation> builder, Binding binding = Binding.Bound) where TImplementation : TDefinition
         {
             return collection.CheckIfAdded<TDefinition>(c =>
             {
@@ -134,7 +134,7 @@ namespace DeltaWare.Dependencies.Abstractions
         #region MyRegion
 
         [Obsolete("This has been replace with the Register FluentApi")]
-        public static void AddScoped<TImplementation, TDefinition>(this IDependencyCollection collection, Binding binding = Binding.Bound) where TDefinition : TImplementation
+        public static void AddScoped<TDefinition, TImplementation>(this IDependencyCollection collection, Binding binding = Binding.Bound) where TImplementation : TDefinition
         {
             collection.Register<TImplementation>()
                     .DefineAs<TDefinition>()
@@ -143,7 +143,7 @@ namespace DeltaWare.Dependencies.Abstractions
         }
 
         [Obsolete("This has been replace with the Register FluentApi")]
-        public static void AddScoped<TImplementation, TDefinition>(this IDependencyCollection collection, Func<TImplementation> builder, Binding binding = Binding.Bound) where TDefinition : TImplementation
+        public static void AddScoped<TDefinition, TImplementation>(this IDependencyCollection collection, Func<TImplementation> builder, Binding binding = Binding.Bound) where TImplementation : TDefinition
         {
             collection.Register(builder)
                     .DefineAs<TDefinition>()
@@ -152,7 +152,7 @@ namespace DeltaWare.Dependencies.Abstractions
         }
 
         [Obsolete("This has been replace with the Register FluentApi")]
-        public static void AddScoped<TImplementation, TDefinition>(this IDependencyCollection collection, Func<IDependencyProvider, TImplementation> builder, Binding binding = Binding.Bound) where TDefinition : TImplementation
+        public static void AddScoped<TDefinition, TImplementation>(this IDependencyCollection collection, Func<IDependencyProvider, TImplementation> builder, Binding binding = Binding.Bound) where TImplementation : TDefinition
         {
             collection.Register(builder)
                     .DefineAs<TDefinition>()
@@ -185,7 +185,7 @@ namespace DeltaWare.Dependencies.Abstractions
         }
 
         [Obsolete("This has been replace with the Register FluentApi")]
-        public static bool TryAddScoped<TImplementation, TDefinition>(this IDependencyCollection collection, Binding binding = Binding.Bound) where TDefinition : TImplementation
+        public static bool TryAddScoped<TDefinition, TImplementation>(this IDependencyCollection collection, Binding binding = Binding.Bound) where TImplementation : TDefinition
         {
             return collection.CheckIfAdded<TDefinition>(c =>
             {
@@ -197,7 +197,7 @@ namespace DeltaWare.Dependencies.Abstractions
         }
 
         [Obsolete("This has been replace with the Register FluentApi")]
-        public static bool TryAddScoped<TImplementation, TDefinition>(this IDependencyCollection collection, Func<TImplementation> builder, Binding binding = Binding.Bound) where TDefinition : TImplementation
+        public static bool TryAddScoped<TDefinition, TImplementation>(this IDependencyCollection collection, Func<TImplementation> builder, Binding binding = Binding.Bound) where TImplementation : TDefinition
         {
             return collection.CheckIfAdded<TDefinition>(c =>
             {
@@ -209,7 +209,7 @@ namespace DeltaWare.Dependencies.Abstractions
         }
 
         [Obsolete("This has been replace with the Register FluentApi")]
-        public static bool TryAddScoped<TImplementation, TDefinition>(this IDependencyCollection collection, Func<IDependencyProvider, TImplementation> builder, Binding binding = Binding.Bound) where TDefinition : TImplementation
+        public static bool TryAddScoped<TDefinition, TImplementation>(this IDependencyCollection collection, Func<IDependencyProvider, TImplementation> builder, Binding binding = Binding.Bound) where TImplementation : TDefinition
         {
             return collection.CheckIfAdded<TDefinition>(c =>
             {
@@ -258,7 +258,7 @@ namespace DeltaWare.Dependencies.Abstractions
         #region Singleton
 
         [Obsolete("This has been replace with the Register FluentApi")]
-        public static void AddSingleton<TImplementation, TDefinition>(this IDependencyCollection collection, Binding binding = Binding.Bound) where TDefinition : TImplementation
+        public static void AddSingleton<TDefinition, TImplementation>(this IDependencyCollection collection, Binding binding = Binding.Bound) where TImplementation : TDefinition
         {
             collection.Register<TImplementation>()
                     .DefineAs<TDefinition>()
@@ -267,7 +267,7 @@ namespace DeltaWare.Dependencies.Abstractions
         }
 
         [Obsolete("This has been replace with the Register FluentApi")]
-        public static void AddSingleton<TImplementation, TDefinition>(this IDependencyCollection collection, Func<TImplementation> builder, Binding binding = Binding.Bound) where TDefinition : TImplementation
+        public static void AddSingleton<TDefinition, TImplementation>(this IDependencyCollection collection, Func<TImplementation> builder, Binding binding = Binding.Bound) where TImplementation : TDefinition
         {
             collection.Register(builder)
                     .DefineAs<TDefinition>()
@@ -276,7 +276,7 @@ namespace DeltaWare.Dependencies.Abstractions
         }
 
         [Obsolete("This has been replace with the Register FluentApi")]
-        public static void AddSingleton<TImplementation, TDefinition>(this IDependencyCollection collection, Func<IDependencyProvider, TImplementation> builder, Binding binding = Binding.Bound) where TDefinition : TImplementation
+        public static void AddSingleton<TDefinition, TImplementation>(this IDependencyCollection collection, Func<IDependencyProvider, TImplementation> builder, Binding binding = Binding.Bound) where TImplementation : TDefinition
         {
             collection.Register(builder)
                     .DefineAs<TDefinition>()
@@ -309,7 +309,7 @@ namespace DeltaWare.Dependencies.Abstractions
         }
 
         [Obsolete("This has been replace with the Register FluentApi")]
-        public static bool TryAddSingleton<TImplementation, TDefinition>(this IDependencyCollection collection, Binding binding = Binding.Bound) where TDefinition : TImplementation
+        public static bool TryAddSingleton<TDefinition, TImplementation>(this IDependencyCollection collection, Binding binding = Binding.Bound) where TImplementation : TDefinition
         {
             return collection.CheckIfAdded<TDefinition>(c =>
             {
@@ -321,7 +321,7 @@ namespace DeltaWare.Dependencies.Abstractions
         }
 
         [Obsolete("This has been replace with the Register FluentApi")]
-        public static bool TryAddSingleton<TImplementation, TDefinition>(this IDependencyCollection collection, Func<TImplementation> builder, Binding binding = Binding.Bound) where TDefinition : TImplementation
+        public static bool TryAddSingleton<TDefinition, TImplementation>(this IDependencyCollection collection, Func<TImplementation> builder, Binding binding = Binding.Bound) where TImplementation : TDefinition
         {
             return collection.CheckIfAdded<TDefinition>(c =>
             {
@@ -333,7 +333,7 @@ namespace DeltaWare.Dependencies.Abstractions
         }
 
         [Obsolete("This has been replace with the Register FluentApi")]
-        public static bool TryAddSingleton<TImplementation, TDefinition>(this IDependencyCollection collection, Func<IDependencyProvider, TImplementation> builder, Binding binding = Binding.Bound) where TDefinition : TImplementation
+        public static bool TryAddSingleton<TDefinition, TImplementation>(this IDependencyCollection collection, Func<IDependencyProvider, TImplementation> builder, Binding binding = Binding.Bound) where TImplementation : TDefinition
         {
             return collection.CheckIfAdded<TDefinition>(c =>
             {
