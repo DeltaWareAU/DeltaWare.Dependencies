@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics;
 using BetterConsoleTables;
 using DeltaWare.SDK.Benchmarking.Results;
+using DeltaWare.SDK.Core.Helpers;
 
 namespace DeltaWare.Dependencies.Benchmark
 {
@@ -23,11 +24,44 @@ namespace DeltaWare.Dependencies.Benchmark
         {
             Table table = new Table("Name", "Total Ticks", "Average", "Min", "Max");
 
-            table.AddRow(result.Name, result.TotalTicks, result.AverageTicks, result.MinimumTicks, result.MaximumTicks);
+            table.AddRow(
+                result.Name,
+                TickHelper.ToHumanReadableTime(result.TotalTicks),
+                TickHelper.ToHumanReadableTime(Convert.ToInt64(result.AverageTicks)),
+                TickHelper.ToHumanReadableTime(result.MinimumTicks),
+                TickHelper.ToHumanReadableTime(result.MaximumTicks));
 
-            foreach (IMetricResult metric in result.Results)
+            foreach (IBenchmarkResult metric in result.Results)
             {
-                table.AddRow(metric.Name, metric.TotalTicks, metric.AverageTicks, metric.MinimumTicks, metric.MaximumTicks);
+                table.AddRow(
+                    metric.Name,
+                    TickHelper.ToHumanReadableTime(metric.TotalTicks),
+                    TickHelper.ToHumanReadableTime(Convert.ToInt64(metric.AverageTicks)),
+                    TickHelper.ToHumanReadableTime(metric.MinimumTicks),
+                    TickHelper.ToHumanReadableTime(metric.MaximumTicks));
+            }
+
+            table.Config = TableConfiguration.UnicodeAlt();
+
+            Console.WriteLine(table.ToString());            
+            
+            table = new Table("Name", "Total Ticks", "Average", "Min", "Max");
+
+            table.AddRow(
+                result.Name,
+                result.TotalTicks,
+                result.AverageTicks,
+                result.MinimumTicks,
+                result.MaximumTicks);
+
+            foreach (IBenchmarkResult metric in result.Results)
+            {
+                table.AddRow(
+                    metric.Name,
+                    metric.TotalTicks,
+                    metric.AverageTicks,
+                    metric.MinimumTicks,
+                    metric.MaximumTicks);
             }
 
             table.Config = TableConfiguration.UnicodeAlt();
@@ -63,7 +97,14 @@ namespace DeltaWare.Dependencies.Benchmark
                     });
                 
                 metrics
-                    .AddMetric("Get Dependency")
+                    .AddMetric("1st Get Dependency")
+                    .Measure(() =>
+                    {
+                        provider.GetDependency<IMessagingService>();
+                    });
+                
+                metrics
+                    .AddMetric("2nd Get Dependency")
                     .Measure(() =>
                     {
                         provider.GetDependency<IMessagingService>();
@@ -77,7 +118,7 @@ namespace DeltaWare.Dependencies.Benchmark
                     });
             });
 
-            IBenchmarkResult results = benchmark.Run(iterations);
+            IBenchmarkResult results = benchmark.Measure(iterations);
 
             PrintResult(results);
 
