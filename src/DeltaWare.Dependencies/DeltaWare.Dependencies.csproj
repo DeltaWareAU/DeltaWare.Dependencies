@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
+	  <Version>6.0.1.1</Version>
     <Authors>Bradley Clarke</Authors>
     <Company>DeltaWare</Company>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
@@ -10,8 +11,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Description>Adds Dependency Collection/Provider, enabaling generic dependencies with lifetimes to be added. When a dependency is requested depending on its lifetime it will be instantiated and disposed of.</Description>
-    <Version>5.0.0.7</Version>
-    <PackageIcon>nuget_icon.png</PackageIcon>
+	  <PackageIcon>nuget_icon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/armorall171/DeltaWare.Dependencies</PackageProjectUrl>
     <RepositoryUrl>https://github.com/armorall171/DeltaWare.Dependencies</RepositoryUrl>
       <PackageOutputPath>..\..\nuget.packages</PackageOutputPath>
@@ -19,7 +19,6 @@
     <PackageTags>Dependencies; Collection; Generic</PackageTags>
       <IncludeSymbols>true</IncludeSymbols>
       <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-      <PackageReleaseNotes>FIXED - Concurrency issues</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

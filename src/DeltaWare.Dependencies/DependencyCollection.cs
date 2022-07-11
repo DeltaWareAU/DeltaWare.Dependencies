@@ -1,13 +1,13 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
 using DeltaWare.Dependencies.Abstractions.Descriptor;
 using DeltaWare.Dependencies.Abstractions.Registration;
+using DeltaWare.Dependencies.Abstractions.Resolver;
 using DeltaWare.Dependencies.Configuration;
 using DeltaWare.Dependencies.Descriptors;
 using DeltaWare.Dependencies.Registrations;
 using DeltaWare.Dependencies.Resolver;
 using System;
 using System.Collections.Generic;
-using DeltaWare.Dependencies.Abstractions.Resolver;
 
 namespace DeltaWare.Dependencies
 {

@@ -1,9 +1,9 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
 using DeltaWare.Dependencies.Abstractions.Descriptor;
 using DeltaWare.Dependencies.Abstractions.Descriptor.Enums;
+using DeltaWare.Dependencies.Abstractions.Resolver;
 using DeltaWare.Dependencies.Descriptors;
 using System;
-using DeltaWare.Dependencies.Abstractions.Resolver;
 
 namespace DeltaWare.Dependencies.Resolver
 {

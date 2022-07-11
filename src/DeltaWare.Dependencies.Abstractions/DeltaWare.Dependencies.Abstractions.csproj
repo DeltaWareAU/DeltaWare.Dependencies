@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
+	  <Version>6.0.1.1</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <NeutralLanguage>English (Australia)</NeutralLanguage>
@@ -10,8 +11,7 @@
     <Product>DeltaWare.Dependencies</Product>
     <Copyright>Copyright (c) 2020 Bradley Clarke</Copyright>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <Version>5.0.0.5</Version>
-    <Description>Abtractions for DeltaWare.Dependencies</Description>
+	  <Description>Abtractions for DeltaWare.Dependencies</Description>
     <PackageIcon>nuget_icon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/armorall171/DeltaWare.Dependencies</PackageProjectUrl>
       <PackageOutputPath>..\..\nuget.packages</PackageOutputPath>
@@ -20,8 +20,6 @@
     <PackageTags>Dependencies; Collection; Generic; Abstraction</PackageTags>
       <IncludeSymbols>true</IncludeSymbols>
       <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-      <PackageReleaseNotes>REWORKED - ServiceProvider signature, moved generic defnitions to extension methods.
-REWORKED - DependencyCollection signature, moved generic defintions to extension methods.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -39,6 +37,10 @@ REWORKED - DependencyCollection signature, moved generic defintions to extension
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DeltaWare.SDK.Core" Version="6.0.1.1" />
   </ItemGroup>
 
 </Project>

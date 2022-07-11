@@ -1,11 +1,11 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
 using DeltaWare.Dependencies.Abstractions.Descriptor;
 using DeltaWare.Dependencies.Abstractions.Descriptor.Enums;
+using DeltaWare.Dependencies.Abstractions.Resolver;
 using DeltaWare.Dependencies.Resolver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DeltaWare.Dependencies.Abstractions.Resolver;
 
 namespace DeltaWare.Dependencies
 {
