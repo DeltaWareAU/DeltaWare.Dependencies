@@ -30,6 +30,13 @@ namespace DeltaWare.Dependencies
             }
         }
 
+        public bool TryGetDependency(Type definition, out object instance)
+        {
+            instance = InternalGetDependency(definition);
+
+            return instance != null;
+        }
+
         public object CreateInstance(Type definition)
         {
             lock (_concurrencyLock)

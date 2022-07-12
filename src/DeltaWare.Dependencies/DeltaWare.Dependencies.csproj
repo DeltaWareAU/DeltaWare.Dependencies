@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
-	  <Version>6.0.1.1</Version>
+	  <Version>6.0.1.2</Version>
     <Authors>Bradley Clarke</Authors>
     <Company>DeltaWare</Company>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>

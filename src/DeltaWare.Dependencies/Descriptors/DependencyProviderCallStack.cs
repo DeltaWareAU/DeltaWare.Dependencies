@@ -28,6 +28,11 @@ namespace DeltaWare.Dependencies.Descriptors
             return _innerProvider.InternalGetDependency(definition, this);
         }
 
+        public bool TryGetDependency(Type definition, out object instance)
+        {
+            return _innerProvider.TryGetDependency(definition, out instance);
+        }
+
         public object CreateInstance(Type definition)
         {
             return _innerProvider.CreateInstance(definition);
