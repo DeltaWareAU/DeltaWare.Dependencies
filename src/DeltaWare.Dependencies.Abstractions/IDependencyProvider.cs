@@ -1,23 +1,63 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using DeltaWare.Dependencies.Abstractions.Exceptions;
+using System;
+using System.Reflection;
 
 namespace DeltaWare.Dependencies.Abstractions
 {
-    /// <summary>
-    /// Provides instances of dependency whilst handling their lifetimes.
-    /// </summary>
     public interface IDependencyProvider : IDisposable
     {
-        IDependencyScope CreateScope();
+        object GetDependency(Type definition);
+        bool TryGetDependency(Type definition, out object instance);
 
-        IEnumerable<object> GetDependencies(Type dependencyType);
+        object CreateInstance(Type definition);
 
-        object GetDependency(Type dependencyType);
+        bool HasDependency(Type definition);
+    }
 
-        bool HasDependency(Type dependencyType);
+    public static class DependencyProviderExtensions
+    {
+        public static bool TryGetDependency<T>(this IDependencyProvider provider, out T instance)
+        {
+            if (provider.TryGetDependency(typeof(T), out object value))
+            {
+                instance = (T) value;
 
-        bool TryGetDependencies(Type dependencyType, out IEnumerable<object> instances);
+                return true;
+            }
 
-        bool TryGetDependency(Type dependencyType, out object instance);
+            instance = default;
+
+            return false;
+        }
+
+        public static T GetDependency<T>(this IDependencyProvider provider)
+        {
+            return (T)provider.GetDependency(typeof(T));
+        }
+
+        public static T CreateInstance<T>(this IDependencyProvider provider)
+        {
+            return (T)provider.CreateInstance(typeof(T));
+        }
+
+        public static object GetRequiredDependency(this IDependencyProvider provider, Type definition)
+        {
+            if (provider.TryGetDependency(definition, out object instance))
+            {
+                return instance;
+            }
+
+            throw new DependencyNotFoundException(definition);
+        }
+
+        public static T GetRequiredDependency<T>(this IDependencyProvider provider)
+        {
+            return (T)provider.GetRequiredDependency(typeof(T));
+        }
+
+        public static bool HasDependency<T>(this IDependencyProvider provider)
+        {
+            return provider.HasDependency(typeof(T));
+        }
     }
 }

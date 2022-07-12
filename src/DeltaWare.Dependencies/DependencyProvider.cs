@@ -1,292 +1,94 @@
 ﻿using DeltaWare.Dependencies.Abstractions;
-using DeltaWare.Dependencies.Abstractions.Configuration;
-using DeltaWare.Dependencies.Abstractions.Enums;
+using DeltaWare.Dependencies.Abstractions.Descriptor;
 using DeltaWare.Dependencies.Abstractions.Exceptions;
-using DeltaWare.Dependencies.Abstractions.Stack;
-using DeltaWare.Dependencies.Extensions;
-using DeltaWare.Dependencies.Stack;
+using DeltaWare.Dependencies.Abstractions.Resolver;
+using DeltaWare.Dependencies.Descriptors;
+using DeltaWare.Dependencies.Resolver;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
 
 namespace DeltaWare.Dependencies
 {
     internal class DependencyProvider : IDependencyProvider
     {
+        private readonly IDependencyResolver _dependencyResolver;
+
+        private readonly LifetimeScope _providerScope;
+
         private readonly object _concurrencyLock = new();
-        private readonly List<IDependencyInstance> _disposableInstances = new();
-        private readonly bool _internalScope;
-        private readonly DependencyScope _parentScope;
-        private readonly Dictionary<Type, IDependencyInstance> _scopedInstances = new();
-        private readonly IReadOnlyDependencyCollection _sourceCollection;
 
-        public DependencyProvider(IReadOnlyDependencyCollection sourceCollection, DependencyScope scope)
+        public DependencyProvider(LifetimeScope providerScope)
         {
-            _sourceCollection = sourceCollection;
-
-            _parentScope = scope;
-            _internalScope = false;
+            _providerScope = providerScope ?? throw new ArgumentNullException(nameof(providerScope));
+            _dependencyResolver = new DependencyProviderResolver(this, providerScope.Resolver);
         }
 
-        public DependencyProvider(IReadOnlyDependencyCollection sourceCollection)
-        {
-            _sourceCollection = sourceCollection;
-
-            _parentScope = new DependencyScope(sourceCollection);
-            _internalScope = true;
-        }
-
-        #region Instantiation
-
-        public IDependencyInstance InternalGetInstance(IDependencyDescriptor descriptor)
+        public object GetDependency(Type definition)
         {
             lock (_concurrencyLock)
             {
-                return InternalGetInstance(descriptor, null);
+                return InternalGetDependency(definition);
             }
         }
 
-        public bool TryGetInstance(IDependencyDescriptor descriptor, out IDependencyInstance instance)
+        public bool TryGetDependency(Type definition, out object instance)
         {
-            return _scopedInstances.TryGetValue(descriptor.Type, out instance);
+            instance = InternalGetDependency(definition);
+
+            return instance != null;
         }
 
-        protected virtual void ConfigureInstance(IDependencyDescriptor descriptor, object instance)
+        public object CreateInstance(Type definition)
         {
-            foreach (IConfiguration configuration in descriptor.Configuration)
+            lock (_concurrencyLock)
             {
-                switch (configuration)
-                {
-                    case ITypeConfiguration typeConfiguration:
-                        typeConfiguration.Configurator.Invoke(instance);
-                        break;
+                IDependencyDescriptor descriptor = _dependencyResolver.GetDependency(definition) ?? new TypeDependencyDescriptor(definition);
 
-                    case IProviderConfiguration providerConfiguration:
-                        providerConfiguration.Configurator.Invoke(this, instance);
-                        break;
-                }
+                return InternalGetDependency(descriptor);
             }
         }
 
-        private IDependencyInstance InternalCreateInstance(IDependencyDescriptor descriptor, IStack<IDependencyDescriptor> parentStack)
+        public bool HasDependency(Type definition)
         {
-            object instance;
-
-            if (descriptor.ImplementationFactory != null)
-            {
-                instance = descriptor.ImplementationFactory.Invoke(this);
-            }
-            else if (descriptor.ImplementationInstance != null)
-            {
-                instance = descriptor.ImplementationInstance.Invoke();
-            }
-            else if (descriptor.ImplementationType != null)
-            {
-                ConstructorInfo[] constructs = descriptor.ImplementationType.GetConstructors();
-
-                if (constructs.Length > 1)
-                {
-                    throw new MultipleDependencyConstructorsException(descriptor.ImplementationType);
-                }
-
-                ConstructorInfo constructor = constructs.First();
-
-                ParameterInfo[] parameters = constructor.GetParameters();
-
-                object[] arguments = new object[parameters.Length];
-
-                for (int i = 0; i < parameters.Length; i++)
-                {
-                    object paramInstance;
-
-                    if (parameters[i].ParameterType == typeof(IDependencyScope))
-                    {
-                        paramInstance = _parentScope;
-                    }
-                    else if (parameters[i].ParameterType == typeof(IDependencyProvider))
-                    {
-                        if (descriptor.Lifetime == Lifetime.Singleton)
-                        {
-                            throw new SingletonDependencyException(descriptor.Type);
-                        }
-
-                        paramInstance = this;
-                    }
-                    else
-                    {
-                        IDependencyDescriptor parameterDescriptor = _sourceCollection.GetDependencyDescriptor(parameters[i].ParameterType);
-
-                        if (parameterDescriptor == null)
-                        {
-                            if (parameters[i].HasDefaultValue)
-                            {
-                                continue;
-                            }
-
-                            throw new DependencyNotFoundException(parameters[i].ParameterType);
-                        }
-
-                        if (descriptor.Lifetime == Lifetime.Singleton && parameterDescriptor.Lifetime != Lifetime.Singleton)
-                        {
-                            throw new SingletonDependencyException(descriptor.Type);
-                        }
-
-                        paramInstance = InternalGetInstance(parameterDescriptor, parentStack).Instance;
-                    }
-
-                    arguments[i] = paramInstance;
-                }
-
-                instance = Activator.CreateInstance(descriptor.ImplementationType, arguments);
-            }
-            else
-            {
-                throw new UnresolvableDependency(descriptor.Type);
-            }
-
-            if (instance == null)
-            {
-                throw new NullDependencyInstanceException(descriptor.Type);
-            }
-
-            ConfigureInstance(descriptor, instance);
-
-            return descriptor.ToInstance(instance);
+            return _dependencyResolver.HasDependency(definition);
         }
 
-        private IDependencyInstance InternalGetInstance(IDependencyDescriptor descriptor, IStack<IDependencyDescriptor> parentStack)
+        internal object InternalGetDependency(Type type, DependencyProviderCallStack providerCallStack = null)
         {
-            if (parentStack == null)
-            {
-                parentStack = new DependencyStack(descriptor);
-            }
-            else
-            {
-                parentStack = parentStack.CreateChild(descriptor);
+            IDependencyDescriptor dependency = _dependencyResolver.GetDependency(type);
 
-                parentStack.EnsureNoCircularDependencies();
-            }
-
-            try
-            {
-                IDependencyInstance instance;
-
-                if (descriptor.Lifetime == Lifetime.Singleton)
-                {
-                    Monitor.Enter(_parentScope);
-
-                    if (_parentScope.TryGetInstance(descriptor, out instance))
-                    {
-                        return instance;
-                    }
-                }
-
-                if (descriptor.Lifetime == Lifetime.Scoped && TryGetInstance(descriptor, out instance))
-                {
-                    return instance;
-                }
-
-                return CreateInstance();
-            }
-            finally
-            {
-                if (descriptor.Lifetime == Lifetime.Singleton)
-                {
-                    Monitor.Exit(_parentScope);
-                }
-            }
-
-            IDependencyInstance CreateInstance()
-            {
-                IDependencyInstance instance = InternalCreateInstance(descriptor, parentStack);
-
-                if (instance.Lifetime == Lifetime.Singleton)
-                {
-                    _parentScope.RegisterInstance(instance);
-                }
-                else
-                {
-                    if (instance.Lifetime == Lifetime.Scoped)
-                    {
-                        _scopedInstances.Add(instance.Type, instance);
-                    }
-
-                    if (instance.IsDisposable && instance.Binding == Binding.Bound)
-                    {
-                        _disposableInstances.Add(instance);
-                    }
-                }
-
-                return instance;
-            }
-        }
-
-        #endregion Instantiation
-
-        public IDependencyScope CreateScope()
-        {
-            return _parentScope.CreateScope();
-        }
-
-        public IEnumerable<object> GetDependencies(Type dependencyType)
-        {
-            List<object> instances = new List<object>();
-
-            foreach (IDependencyDescriptor descriptor in _sourceCollection.GetDependencyDescriptors(dependencyType))
-            {
-                object instance = InternalGetInstance(descriptor).Instance;
-
-                instances.Add(instance);
-            }
-
-            if (instances.Count == 0)
-            {
-                return new List<object>();
-            }
-
-            return instances;
-        }
-
-        public object GetDependency(Type dependencyType)
-        {
-            IDependencyDescriptor descriptor = _sourceCollection.GetDependencyDescriptor(dependencyType);
-
-            if (descriptor == null)
+            if (dependency == null)
             {
                 return null;
             }
 
-            return InternalGetInstance(descriptor).Instance;
+            return InternalGetDependency(dependency, providerCallStack);
         }
-
-        public bool HasDependency(Type dependencyType)
+        internal object InternalGetDependency(IDependencyDescriptor dependency, DependencyProviderCallStack providerCallStack = null)
         {
-            return _sourceCollection.HasDependency(dependencyType);
-        }
-
-        public bool TryGetDependencies(Type dependencyType, out IEnumerable<object> instances)
-        {
-            List<object> dependencyInstances = GetDependencies(dependencyType).ToList();
-
-            if (dependencyInstances.Count == 0)
+            if (providerCallStack == null)
             {
-                instances = null;
-
-                return false;
+                providerCallStack = new DependencyProviderCallStack(this, dependency);
+            }
+            else
+            {
+                providerCallStack = providerCallStack.CreateChild(dependency);
             }
 
-            instances = dependencyInstances;
+            if (_providerScope.TryGetInstance(dependency, out IDependencyInstance instance))
+            {
+                return instance.Instance;
+            }
 
-            return true;
-        }
+            instance = dependency.CreateInstance(providerCallStack);
 
-        public bool TryGetDependency(Type dependencyType, out object instance)
-        {
-            instance = GetDependency(dependencyType);
+            if (instance == null)
+            {
+                throw NullDependencyInstanceException.NullInstance(dependency.ImplementationType);
+            }
 
-            return instance != null;
+            _providerScope.RegisterInstance(instance);
+
+            return instance.Instance;
         }
 
         #region IDisposable
@@ -296,36 +98,18 @@ namespace DeltaWare.Dependencies
         /// <inheritdoc cref="IDisposable.Dispose"/>
         public void Dispose()
         {
-            Dispose(true);
-
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Disposes all bound instances of scoped dependencies.
-        /// </summary>
-        protected virtual void Dispose(bool disposing)
-        {
             if (_disposed)
             {
                 return;
             }
 
-            if (disposing)
-            {
-                if (_internalScope)
-                {
-                    _parentScope.Dispose();
-                }
-
-                foreach (IDependencyInstance instance in _disposableInstances)
-                {
-                    instance.Dispose();
-                }
-            }
+            _providerScope.Dispose();
 
             _disposed = true;
+
+            GC.SuppressFinalize(this);
         }
+
 
         #endregion IDisposable
     }

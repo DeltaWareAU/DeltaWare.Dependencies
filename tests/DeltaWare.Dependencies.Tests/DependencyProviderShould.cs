@@ -100,7 +100,7 @@ namespace DeltaWare.Dependencies.Tests
             collection.HasDependency<TestDisposable>().ShouldBeTrue();
             collection.HasDependency<TestDependency>().ShouldBeTrue();
 
-            using (IDependencyScope scope = collection.CreateScope())
+            using (ILifetimeScope scope = collection.CreateScope())
             {
                 using (IDependencyProvider provider = Should.NotThrow(scope.BuildProvider))
                 {
@@ -150,7 +150,7 @@ namespace DeltaWare.Dependencies.Tests
             disposableA.IsDisposed.ShouldBeTrue();
             disposableB.IsDisposed.ShouldBeTrue();
 
-            IDependencyScope dependencyScope = collection.CreateScope();
+            ILifetimeScope dependencyScope = collection.CreateScope();
 
             IDependencyProvider dependencyProvider = dependencyScope.BuildProvider();
 
@@ -186,7 +186,7 @@ namespace DeltaWare.Dependencies.Tests
             collection.HasDependency<TestDisposable>().ShouldBeTrue();
             collection.HasDependency<TestDependency>().ShouldBeTrue();
 
-            using (IDependencyScope scope = collection.CreateScope())
+            using (ILifetimeScope scope = collection.CreateScope())
             {
                 using (IDependencyProvider provider = Should.NotThrow(scope.BuildProvider))
                 {
@@ -237,7 +237,7 @@ namespace DeltaWare.Dependencies.Tests
             disposableA.IsDisposed.ShouldBeTrue();
             disposableB.IsDisposed.ShouldBeTrue();
 
-            IDependencyScope dependencyScope = collection.CreateScope();
+            ILifetimeScope dependencyScope = collection.CreateScope();
 
             IDependencyProvider dependencyProvider = dependencyScope.BuildProvider();
 
@@ -273,7 +273,7 @@ namespace DeltaWare.Dependencies.Tests
             collection.HasDependency<TestDisposable>().ShouldBeTrue();
             collection.HasDependency<TestDependency>().ShouldBeTrue();
 
-            using (IDependencyScope scope = collection.CreateScope())
+            using (ILifetimeScope scope = collection.CreateScope())
             {
                 using (IDependencyProvider provider = Should.NotThrow(scope.BuildProvider))
                 {
@@ -323,7 +323,7 @@ namespace DeltaWare.Dependencies.Tests
             disposableA.IsDisposed.ShouldBeTrue();
             disposableB.IsDisposed.ShouldBeTrue();
 
-            IDependencyScope dependencyScope = collection.CreateScope();
+            ILifetimeScope dependencyScope = collection.CreateScope();
 
             IDependencyProvider dependencyProvider = dependencyScope.BuildProvider();
 
@@ -369,13 +369,23 @@ namespace DeltaWare.Dependencies.Tests
 
             collection.AddSingleton<DependencyWithScope, DependencyWithScope>();
 
+            using (ILifetimeScope scope = collection.CreateScope())
+            {
+                using (IDependencyProvider provider = scope.BuildProvider())
+                {
+                    DependencyWithScope dependency = Should.NotThrow(provider.GetDependency<DependencyWithScope>);
+
+                    dependency.ShouldNotBeNull();
+                    dependency.Scope.ShouldNotBeNull();
+                }
+            }
+
             using (IDependencyProvider provider = collection.BuildProvider())
             {
-                DependencyWithScope dependency = Should.NotThrow(provider.GetDependency<DependencyWithScope>);
-
-                dependency.ShouldNotBeNull();
-                dependency.Scope.ShouldNotBeNull();
+                Should.Throw<InvalidScopeException>(provider.GetDependency<DependencyWithScope>);
             }
+
+
         }
 
         [Fact]
@@ -386,7 +396,7 @@ namespace DeltaWare.Dependencies.Tests
             collection.AddScoped<CircularDependencyA>();
             collection.AddScoped<CircularDependencyB>();
 
-            using IDependencyScope scope = collection.CreateScope();
+            using ILifetimeScope scope = collection.CreateScope();
             using IDependencyProvider provider = scope.BuildProvider();
 
             Should.Throw<CircularDependencyException>(provider.GetDependency<CircularDependencyA>);
@@ -397,7 +407,7 @@ namespace DeltaWare.Dependencies.Tests
         {
             IDependencyCollection collection = new DependencyCollection();
 
-            using IDependencyScope scope = collection.CreateScope();
+            using ILifetimeScope scope = collection.CreateScope();
 
             using IDependencyProvider provider = Should.NotThrow(scope.BuildProvider);
 
@@ -412,11 +422,59 @@ namespace DeltaWare.Dependencies.Tests
             collection.AddScoped<TestDisposable>();
             collection.AddSingleton<TestDependency>();
 
-            using IDependencyScope scope = collection.CreateScope();
+            using ILifetimeScope scope = collection.CreateScope();
 
             using IDependencyProvider provider = Should.NotThrow(scope.BuildProvider);
 
             Should.Throw<SingletonDependencyException>(provider.GetDependency<TestDependency>);
+        }
+
+        [Fact]
+        public void InstantiateUnregisteredDependency()
+        {
+            IDependencyCollection collection = new DependencyCollection();
+
+            int intValue = 171;
+            string stringValue = "Hello World";
+
+            collection.AddScoped(() => new TestDisposable
+            {
+                IntValue = intValue,
+                StringValue = stringValue
+            });
+            collection.AddScoped<TestDependency>();
+
+            using ILifetimeScope scope = collection.CreateScope();
+
+            using IDependencyProvider provider = Should.NotThrow(scope.BuildProvider);
+
+            UnregisteredDependency unregistered = Should.NotThrow(provider.CreateInstance<UnregisteredDependency>);
+
+            unregistered.IsDisposed.ShouldBeFalse();
+
+            unregistered.Dependency.TestDisposable.IntValue.ShouldBe(intValue);
+            unregistered.Dependency.TestDisposable.StringValue.ShouldBe(stringValue);
+            unregistered.Dependency.TestDisposable.IsDisposed.ShouldBeFalse();
+
+            provider.Dispose();
+
+            unregistered.IsDisposed.ShouldBeTrue();
+            unregistered.Dependency.TestDisposable.IsDisposed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void ThrowSingletonDependencyExceptionInstantiateUnregistered()
+        {
+            IDependencyCollection collection = new DependencyCollection();
+
+            collection.AddScoped<TestDisposable>();
+            collection.AddSingleton<TestDependency>();
+
+            using ILifetimeScope scope = collection.CreateScope();
+
+            using IDependencyProvider provider = Should.NotThrow(scope.BuildProvider);
+
+            Should.Throw<SingletonDependencyException>(provider.CreateInstance<UnregisteredDependency>);
         }
     }
 }

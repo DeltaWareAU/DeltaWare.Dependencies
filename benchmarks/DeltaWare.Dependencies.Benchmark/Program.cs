@@ -1,84 +1,115 @@
-﻿using DeltaWare.Dependencies.Abstractions;
+﻿using BetterConsoleTables;
+using DeltaWare.Dependencies.Abstractions;
 using DeltaWare.Dependencies.Benchmark.Mocking;
+using DeltaWare.SDK.Benchmarking.Results;
+using DeltaWare.SDK.Core.Helpers;
 using System;
-using System.Diagnostics;
 
 namespace DeltaWare.Dependencies.Benchmark
 {
     internal class Program
     {
-        public static void DependencyBenchmark(int iterations)
+        private static void PrintResult(IBenchmarkResult result)
         {
-            decimal registrationTime = 0;
-            decimal buildTime = 0;
-            decimal disposeTime = 0;
+            Table table = new Table("Name", "Total Ticks", "Average", "Min", "Max");
 
-            for (int i = 0; i < iterations; i++)
+            table.AddRow(
+                result.Name,
+                TickHelper.ToHumanReadableTime(result.TotalTicks),
+                TickHelper.ToHumanReadableTime(Convert.ToInt64(result.AverageTicks)),
+                TickHelper.ToHumanReadableTime(result.MinimumTicks),
+                TickHelper.ToHumanReadableTime(result.MaximumTicks));
+
+            foreach (IBenchmarkResult metric in result.Results)
             {
-                IDependencyCollection dependencies = new DependencyCollection();
-
-                Stopwatch stopwatch = new Stopwatch();
-
-                stopwatch.Start();
-
-                dependencies.AddScoped<IAddressService, AddressService>();
-                dependencies.AddScoped<IEmailService, EmailService>();
-                dependencies.AddScoped<IMessagingService, MessagingService>();
-                dependencies.AddScoped<IPostalService, PostalService>();
-
-                stopwatch.Stop();
-
-                registrationTime += stopwatch.ElapsedTicks;
-
-                IDependencyScope scope = dependencies.CreateScope();
-                IDependencyProvider provider = scope.BuildProvider();
-
-                stopwatch.Restart();
-
-                provider.GetDependency<IMessagingService>();
-
-                stopwatch.Stop();
-
-                buildTime += stopwatch.ElapsedTicks;
-
-                stopwatch.Restart();
-
-                provider.Dispose();
-
-                stopwatch.Stop();
-
-                disposeTime += stopwatch.ElapsedTicks;
-
-                scope.Dispose();
+                table.AddRow(
+                    metric.Name,
+                    TickHelper.ToHumanReadableTime(metric.TotalTicks),
+                    TickHelper.ToHumanReadableTime(Convert.ToInt64(metric.AverageTicks)),
+                    TickHelper.ToHumanReadableTime(metric.MinimumTicks),
+                    TickHelper.ToHumanReadableTime(metric.MaximumTicks));
             }
 
-            decimal totalTime = registrationTime + buildTime + disposeTime;
+            table.Config = TableConfiguration.UnicodeAlt();
 
-            Console.WriteLine();
-            Console.WriteLine();
-            Console.WriteLine("--------------------------Benchmark Completed---------------------------");
-            Console.WriteLine($"Total Time: [{Math.Round(totalTime / 10000)}ms] | [{Math.Round(totalTime)} ticks]");
-            Console.WriteLine($"Total Registration Time: [{Math.Round(registrationTime / 10000)}ms] | [{Math.Round(registrationTime)} ticks]");
-            Console.WriteLine($"Total Build Time: [{Math.Round(buildTime / 10000)}ms] | [{Math.Round(buildTime)} ticks]");
-            Console.WriteLine($"Total Dispose Time: [{Math.Round(disposeTime / 10000)}ms] | [{Math.Round(disposeTime)} ticks]");
-            Console.WriteLine("------------------------------------------------------------------------");
+            Console.WriteLine(table.ToString());
 
-            totalTime /= iterations;
-            registrationTime /= iterations;
-            buildTime /= iterations;
-            disposeTime /= iterations;
+            table = new Table("Name", "Total Ticks", "Average", "Min", "Max");
 
-            Console.WriteLine($"Average Time: [{Math.Round(totalTime / 10000)}ms] | [{Math.Round(totalTime)} ticks]");
-            Console.WriteLine($"Average Registration Time: [{Math.Round(registrationTime / 10000)}ms] | [{Math.Round(registrationTime)} ticks]");
-            Console.WriteLine($"Average Build Time: [{Math.Round(buildTime / 10000)}ms] | [{Math.Round(buildTime)} ticks]");
-            Console.WriteLine($"Average Dispose Time: [{Math.Round(disposeTime / 10000)}ms] | [{Math.Round(disposeTime)} ticks]");
-            Console.WriteLine("------------------------------------------------------------------------");
+            table.AddRow(
+                result.Name,
+                result.TotalTicks,
+                result.AverageTicks,
+                result.MinimumTicks,
+                result.MaximumTicks);
 
-            Console.ReadKey();
+            foreach (IBenchmarkResult metric in result.Results)
+            {
+                table.AddRow(
+                    metric.Name,
+                    metric.TotalTicks,
+                    metric.AverageTicks,
+                    metric.MinimumTicks,
+                    metric.MaximumTicks);
+            }
+
+            table.Config = TableConfiguration.UnicodeAlt();
+
+            Console.WriteLine(table.ToString());
+            Console.Read();
         }
 
-        public void DependencyActionBenchmark()
+        public static void DependencyBenchmark(int iterations)
         {
+            SDK.Benchmarking.Benchmark benchmark = new SDK.Benchmarking.Benchmark(metrics =>
+            {
+                IDependencyCollection dependencies = new DependencyCollection();
+                ILifetimeScope scope = null;
+                IDependencyProvider provider = null;
+
+                metrics
+                    .AddMetric("Registration")
+                    .Measure(() =>
+                    {
+                        dependencies.Register<AddressService>().DefineAs<IAddressService>().AsScoped();
+                        dependencies.Register<EmailService>().DefineAs<IEmailService>().AsScoped();
+                        dependencies.Register<MessagingService>().DefineAs<IMessagingService>().AsScoped();
+                        dependencies.Register<PostalService>().DefineAs<IPostalService>().AsScoped();
+                    });
+
+                metrics
+                    .AddMetric("Create Scope")
+                    .Measure(() =>
+                    {
+                        scope = dependencies.CreateScope();
+                        provider = scope.BuildProvider();
+                    });
+
+                metrics
+                    .AddMetric("1st Get Dependency")
+                    .Measure(() =>
+                    {
+                        provider.GetDependency<IMessagingService>();
+                    });
+
+                metrics
+                    .AddMetric("2nd Get Dependency")
+                    .Measure(() =>
+                    {
+                        provider.GetDependency<IMessagingService>();
+                    });
+
+                metrics
+                    .AddMetric("Dispose Scope")
+                    .Measure(() =>
+                    {
+                        scope.Dispose();
+                    });
+            });
+
+            IBenchmarkResult results = benchmark.Run(iterations);
+
+            PrintResult(results);
         }
 
         private static void Main(string[] args)

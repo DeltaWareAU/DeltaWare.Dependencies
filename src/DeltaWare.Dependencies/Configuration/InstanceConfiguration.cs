@@ -4,23 +4,23 @@ using System;
 
 namespace DeltaWare.Dependencies.Configuration
 {
-    internal class ProviderConfiguration<T> : IConfiguration
+    internal class InstanceConfiguration<T> : IConfiguration
     {
-        protected Action<IDependencyProvider, T> Configuration { get; }
+        protected Action<T> Configuration { get; }
 
-        public ProviderConfiguration(Action<IDependencyProvider, T> configuration)
+        public InstanceConfiguration(Action<T> configuration)
         {
             Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
         public void Configure(IDependencyProvider provider, object instance)
         {
-            InternalConfigure(provider, (T)instance);
+            InternalConfigure((T)instance);
         }
 
-        protected virtual void InternalConfigure(IDependencyProvider provider, T instance)
+        protected virtual void InternalConfigure(T instance)
         {
-            Configuration.Invoke(provider, instance);
+            Configuration.Invoke(instance);
         }
     }
 }

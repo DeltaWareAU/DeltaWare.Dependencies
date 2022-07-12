@@ -2,5 +2,6 @@
 {
     public interface IConfiguration
     {
+        void Configure(IDependencyProvider provider, object instance);
     }
 }

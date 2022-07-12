@@ -1,11 +1,23 @@
-﻿using System;
+﻿#nullable enable
+using DeltaWare.Dependencies.Abstractions.Attributes;
+using System;
 
 namespace DeltaWare.Dependencies.Abstractions.Exceptions
 {
     public class MultipleDependencyConstructorsException : Exception
     {
-        public MultipleDependencyConstructorsException(Type type) : base($"Multiple constructs found for {type.Name}, only one may exist.")
+        private MultipleDependencyConstructorsException(Type type, Exception? innerException = null) : base($"Multiple constructors found for {type.Name}, only one may exist or use the {nameof(InjectAttribute)} on the constructor to be used.", innerException)
         {
+        }
+
+        public static MultipleDependencyConstructorsException MultipleInjectAttribute(Type type)
+        {
+            return new MultipleDependencyConstructorsException(type, IllegalInjectionAttributeUsageException.MultipleConstructorsWithInjectAttribute(type));
+        }
+
+        public static MultipleDependencyConstructorsException MultipleConstructors(Type type)
+        {
+            return new MultipleDependencyConstructorsException(type);
         }
     }
 }
