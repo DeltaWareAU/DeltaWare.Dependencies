@@ -18,14 +18,14 @@ namespace DeltaWare.Dependencies.Tests
             collection.HasDependency<TestDisposable>().ShouldBeFalse();
             collection.HasDependency<TestDependency>().ShouldBeFalse();
 
-            collection.AddTransient(() => new TestDisposable
+            collection.Register(() => new TestDisposable
             {
                 IntValue = 171,
                 StringValue = "Hello World"
-            });
+            }).AsTransient();
 
-            collection.AddTransient<TestDependency, TestDependency>();
-
+            collection.Register<TestDependency>().AsTransient();
+            
             collection.HasDependency<TestDisposable>().ShouldBeTrue();
             collection.HasDependency<TestDependency>().ShouldBeTrue();
         }
@@ -40,13 +40,13 @@ namespace DeltaWare.Dependencies.Tests
 
             collection.Remove<TestDependency>().ShouldBeFalse();
 
-            collection.AddTransient(() => new TestDisposable
+            collection.Register(() => new TestDisposable
             {
                 IntValue = 171,
                 StringValue = "Hello World"
-            });
+            }).AsTransient();
 
-            collection.AddTransient<TestDependency, TestDependency>();
+            collection.Register<TestDependency>().AsTransient();
 
             collection.HasDependency<TestDisposable>().ShouldBeTrue();
             collection.HasDependency<TestDependency>().ShouldBeTrue();
@@ -65,17 +65,30 @@ namespace DeltaWare.Dependencies.Tests
             collection.HasDependency<TestDisposable>().ShouldBeFalse();
             collection.HasDependency<TestDependency>().ShouldBeFalse();
 
-            collection.TryAddTransient(() => new TestDisposable
+            collection.CheckIfAdded<TestDisposable>(c =>
             {
-                IntValue = 171,
-                StringValue = "Hello World"
+                c.TryRegister(() => new TestDisposable
+                {
+                    IntValue = 171,
+                    StringValue = "Hello World"
+                }).AsTransient();
             }).ShouldBeTrue();
 
-            collection.TryAddTransient<TestDependency, TestDependency>().ShouldBeTrue();
+            collection.CheckIfAdded<TestDependency>(c =>
+            {
+                c.TryRegister<TestDependency>().AsTransient();
+            }).ShouldBeTrue();
 
-            collection.TryAddTransient(() => new TestDisposable()).ShouldBeFalse();
-            collection.TryAddTransient<TestDependency, TestDependency>().ShouldBeFalse();
+            collection.CheckIfAdded<TestDisposable>(c =>
+            {
+                c.TryRegister(() => new TestDisposable()).AsTransient();
+            }).ShouldBeFalse();
 
+            collection.CheckIfAdded<TestDependency>(c =>
+            {
+                c.TryRegister<TestDependency>().AsTransient();
+            }).ShouldBeFalse();
+            
             collection.HasDependency<TestDisposable>().ShouldBeTrue();
             collection.HasDependency<TestDependency>().ShouldBeTrue();
         }
@@ -92,14 +105,14 @@ namespace DeltaWare.Dependencies.Tests
             collection.HasDependency<TestDisposable>().ShouldBeFalse();
             collection.HasDependency<TestDependency>().ShouldBeFalse();
 
-            collection.AddScoped(() => new TestDisposable
+            collection.Register(() => new TestDisposable
             {
                 IntValue = 171,
                 StringValue = "Hello World"
-            });
+            }).AsScoped();
 
-            collection.AddScoped<TestDependency, TestDependency>();
-
+            collection.Register<TestDependency>().AsScoped();
+            
             collection.HasDependency<TestDisposable>().ShouldBeTrue();
             collection.HasDependency<TestDependency>().ShouldBeTrue();
         }
@@ -114,14 +127,14 @@ namespace DeltaWare.Dependencies.Tests
 
             collection.Remove<TestDependency>().ShouldBeFalse();
 
-            collection.AddScoped(() => new TestDisposable
+            collection.Register(() => new TestDisposable
             {
                 IntValue = 171,
                 StringValue = "Hello World"
-            });
+            }).AsScoped();
 
-            collection.AddScoped<TestDependency, TestDependency>();
-
+            collection.Register<TestDependency>().AsScoped();
+            
             collection.HasDependency<TestDisposable>().ShouldBeTrue();
             collection.HasDependency<TestDependency>().ShouldBeTrue();
 
@@ -139,17 +152,32 @@ namespace DeltaWare.Dependencies.Tests
             collection.HasDependency<TestDisposable>().ShouldBeFalse();
             collection.HasDependency<TestDependency>().ShouldBeFalse();
 
-            collection.TryAddScoped(() => new TestDisposable
+            collection.CheckIfAdded<TestDisposable>(c =>
             {
-                IntValue = 171,
-                StringValue = "Hello World"
+                c.TryRegister(() => new TestDisposable
+                {
+                    IntValue = 171,
+                    StringValue = "Hello World"
+                }).AsScoped();
             }).ShouldBeTrue();
 
-            collection.TryAddScoped<TestDependency, TestDependency>().ShouldBeTrue();
 
-            collection.TryAddScoped(() => new TestDisposable()).ShouldBeFalse();
-            collection.TryAddScoped<TestDependency, TestDependency>().ShouldBeFalse();
+            collection.CheckIfAdded<TestDependency>(c =>
+            {
+                c.TryRegister<TestDependency>().AsScoped();
+            }).ShouldBeTrue();
 
+            collection.CheckIfAdded<TestDisposable>(c =>
+            {
+                c.TryRegister(() => new TestDisposable()).AsScoped();
+            }).ShouldBeFalse();
+
+
+            collection.CheckIfAdded<TestDependency>(c =>
+            {
+                c.TryRegister<TestDependency>().AsScoped();
+            }).ShouldBeFalse();
+            
             collection.HasDependency<TestDisposable>().ShouldBeTrue();
             collection.HasDependency<TestDependency>().ShouldBeTrue();
         }
@@ -166,13 +194,13 @@ namespace DeltaWare.Dependencies.Tests
             collection.HasDependency<TestDisposable>().ShouldBeFalse();
             collection.HasDependency<TestDependency>().ShouldBeFalse();
 
-            collection.AddSingleton(() => new TestDisposable
+            collection.Register(() => new TestDisposable
             {
                 IntValue = 171,
                 StringValue = "Hello World"
-            });
+            }).AsSingleton();
 
-            collection.AddSingleton<TestDependency, TestDependency>();
+            collection.Register<TestDependency>().AsSingleton();
 
             collection.HasDependency<TestDisposable>().ShouldBeTrue();
             collection.HasDependency<TestDependency>().ShouldBeTrue();
@@ -188,13 +216,13 @@ namespace DeltaWare.Dependencies.Tests
 
             collection.Remove<TestDependency>().ShouldBeFalse();
 
-            collection.AddSingleton(() => new TestDisposable
+            collection.Register(() => new TestDisposable
             {
                 IntValue = 171,
                 StringValue = "Hello World"
-            });
+            }).AsSingleton();
 
-            collection.AddSingleton<TestDependency, TestDependency>();
+            collection.Register<TestDependency>().AsSingleton();
 
             collection.HasDependency<TestDisposable>().ShouldBeTrue();
             collection.HasDependency<TestDependency>().ShouldBeTrue();
@@ -213,16 +241,33 @@ namespace DeltaWare.Dependencies.Tests
             collection.HasDependency<TestDisposable>().ShouldBeFalse();
             collection.HasDependency<TestDependency>().ShouldBeFalse();
 
-            collection.TryAddSingleton(() => new TestDisposable
+            collection.CheckIfAdded<TestDisposable>(c =>
             {
-                IntValue = 171,
-                StringValue = "Hello World"
+                c.TryRegister(() => new TestDisposable
+                {
+                    IntValue = 171,
+                    StringValue = "Hello World"
+                }).AsSingleton();
             }).ShouldBeTrue();
 
-            collection.TryAddSingleton<TestDependency, TestDependency>().ShouldBeTrue();
+            collection.CheckIfAdded<TestDependency>(c =>
+            {
+                c.TryRegister<TestDependency>().AsSingleton();
+            }).ShouldBeTrue();
 
-            collection.TryAddSingleton(() => new TestDisposable()).ShouldBeFalse();
-            collection.TryAddSingleton<TestDependency, TestDependency>().ShouldBeFalse();
+            collection.CheckIfAdded<TestDisposable>(c =>
+            {
+                c.TryRegister(() => new TestDisposable
+                {
+                    IntValue = 171,
+                    StringValue = "Hello World"
+                }).AsSingleton();
+            }).ShouldBeFalse();
+
+            collection.CheckIfAdded<TestDependency>(c =>
+            {
+                c.TryRegister<TestDependency>().AsSingleton();
+            }).ShouldBeFalse();
 
             collection.HasDependency<TestDisposable>().ShouldBeTrue();
             collection.HasDependency<TestDependency>().ShouldBeTrue();

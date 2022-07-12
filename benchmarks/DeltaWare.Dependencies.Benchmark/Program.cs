@@ -9,16 +9,6 @@ namespace DeltaWare.Dependencies.Benchmark
 {
     internal class Program
     {
-        private static decimal ToMilliseconds(long ticks)
-        {
-            return Math.Round((decimal)ticks / 10000, 2);
-        }
-
-        private static decimal ToMilliseconds(decimal ticks)
-        {
-            return Math.Round(ticks / 10000, 2);
-        }
-
         private static void PrintResult(IBenchmarkResult result)
         {
             Table table = new Table("Name", "Total Ticks", "Average", "Min", "Max");

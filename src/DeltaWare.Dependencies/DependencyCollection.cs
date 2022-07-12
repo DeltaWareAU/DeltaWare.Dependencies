@@ -22,7 +22,7 @@ namespace DeltaWare.Dependencies
             _resolver = new DependencyCollectionResolver(this);
         }
 
-        public IDependencyDescriptor GetDependency(Type type)
+        public IDependencyDescriptor Get(Type type)
         {
             if (type == null)
             {
@@ -111,7 +111,7 @@ namespace DeltaWare.Dependencies
             return new DependencyProvider(new LifetimeScope(_resolver));
         }
 
-        public bool HasDependency(Type type)
+        public bool Contains(Type type)
         {
             return _descriptors.ContainsKey(type);
         }

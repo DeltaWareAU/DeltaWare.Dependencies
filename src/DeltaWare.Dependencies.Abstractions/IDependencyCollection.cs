@@ -1,6 +1,7 @@
 ﻿using DeltaWare.Dependencies.Abstractions.Registration;
 using DeltaWare.Dependencies.Abstractions.Resolver;
 using System;
+using DeltaWare.Dependencies.Abstractions.Descriptor;
 
 namespace DeltaWare.Dependencies.Abstractions
 {
@@ -18,7 +19,9 @@ namespace DeltaWare.Dependencies.Abstractions
 
         IDependencyProvider BuildProvider();
 
-        bool HasDependency(Type definition);
+        IDependencyDescriptor Get(Type definition);
+
+        bool Contains(Type definition);
 
         bool Remove(Type definition);
 
@@ -27,27 +30,5 @@ namespace DeltaWare.Dependencies.Abstractions
 
         void AddResolver(DependencyResolverBase dependencyResolver);
         void AddResolver<TResolver>() where TResolver : DependencyResolverBase;
-    }
-
-    public static class DependencyCollectionExtensions
-    {
-        public static bool HasDependency<TDefinition>(this IDependencyCollection collection)
-        {
-            return collection.HasDependency(typeof(TDefinition));
-        }
-        public static bool Remove<TDefinition>(this IDependencyCollection collection)
-        {
-            return collection.Remove(typeof(TDefinition));
-        }
-
-        public static void Configure<TDefinition, TImplementation>(this IDependencyCollection collection, Action<TImplementation> configuration) where TImplementation : TDefinition
-        {
-            collection.Configure<TDefinition>(d => configuration.Invoke((TImplementation)d));
-        }
-
-        public static void Configure<TDefinition, TImplementation>(this IDependencyCollection collection, Action<IDependencyProvider, TImplementation> configuration) where TImplementation : TDefinition
-        {
-            collection.Configure<TDefinition>((p, d) => configuration.Invoke(p, (TImplementation)d));
-        }
     }
 }

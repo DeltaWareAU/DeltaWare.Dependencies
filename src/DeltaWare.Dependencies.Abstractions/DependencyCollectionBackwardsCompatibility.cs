@@ -379,20 +379,6 @@ namespace DeltaWare.Dependencies.Abstractions
 
         #endregion
 
-        private static bool CheckIfAdded<T>(this IDependencyCollection collection, Action<IDependencyCollection> register)
-        {
-            bool existing = collection.HasDependency<T>();
-
-            register.Invoke(collection);
-
-            if (existing)
-            {
-                return false;
-            }
-
-            return collection.HasDependency<T>();
-        }
-
         private static IRegistrationInitialization<T> SetBinding<T>(this IRegistrationBinding<T> registrationBinding, Binding binding)
         {
             if (binding == Binding.Unbound)
