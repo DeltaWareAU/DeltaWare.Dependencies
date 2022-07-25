@@ -10,6 +10,26 @@ namespace DeltaWare.Dependencies.Tests
     public class DependencyProviderShould
     {
         [Fact]
+        public void ShouldGetDependencyWithInnerProvider()
+        {
+            IDependencyCollection collection = new DependencyCollection();
+
+            collection.Register<MyImplementation>()
+                //.DefineAs<IMyDefinition>()
+                .AsSingleton();
+
+            collection
+                .Register(p => p.GetRequiredDependency<MyImplementation>())
+                .DefineAs<IMyDefinition>()
+                .AsTransient()
+                .DoNotBind();
+
+            using var provider = collection.BuildProvider();
+
+            IMyDefinition definition = provider.GetDependency<IMyDefinition>();
+        }
+
+        [Fact]
         public void ConfigureDependency()
         {
             DateTime testDateTime = new DateTime(2000, 06, 01);
@@ -277,6 +297,8 @@ namespace DeltaWare.Dependencies.Tests
             {
                 using (IDependencyProvider provider = Should.NotThrow(scope.BuildProvider))
                 {
+                    provider.TryGetDependency(out disposableA).ShouldBe(true);
+
                     provider.HasDependency<TestDisposable>().ShouldBeTrue();
 
                     disposableA = Should.NotThrow(provider.GetDependency<TestDisposable>);
@@ -349,7 +371,6 @@ namespace DeltaWare.Dependencies.Tests
 
                 dependency.ShouldNotBeNull();
                 dependency.Provider.ShouldNotBeNull();
-                dependency.Provider.ShouldBe(provider);
             }
 
             collection = new DependencyCollection();

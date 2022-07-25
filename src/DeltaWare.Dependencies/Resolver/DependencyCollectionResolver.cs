@@ -1,14 +1,5 @@
 ﻿using DeltaWare.Dependencies.Abstractions.Descriptor;
 using DeltaWare.Dependencies.Abstractions.Resolver;
-
-/* Unmerged change from project 'DeltaWare.Dependencies (net6.0)'
-Before:
-using System;
-using DeltaWare.Dependencies.Abstractions.Resolver;
-After:
-using DeltaWare.Dependencies.Abstractions.Resolver;
-using System;
-*/
 using System;
 
 namespace DeltaWare.Dependencies.Resolver

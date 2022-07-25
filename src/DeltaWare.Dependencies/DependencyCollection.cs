@@ -63,12 +63,12 @@ namespace DeltaWare.Dependencies
 
         public IRegistrationDefinition<TImplementation> Register<TImplementation>(Func<TImplementation> builder)
         {
-            return Register<TImplementation>(new ReferenceDependencyDescriptor(typeof(TImplementation), _ => builder.Invoke()));
+            return Register<TImplementation>(new InstanceDependencyDescriptor<TImplementation>(builder));
         }
 
         public IRegistrationDefinition<TImplementation> Register<TImplementation>(Func<IDependencyProvider, TImplementation> builder)
         {
-            return Register<TImplementation>(new ReferenceDependencyDescriptor(typeof(TImplementation), p => builder.Invoke(p)));
+            return Register<TImplementation>(new ReferenceDependencyDescriptor<TImplementation>(builder));
         }
 
         public IRegistrationDefinition<TImplementation> Register<TImplementation>()
@@ -78,12 +78,12 @@ namespace DeltaWare.Dependencies
 
         public IRegistrationDefinition<TImplementation> TryRegister<TImplementation>(Func<TImplementation> builder)
         {
-            return TryRegister<TImplementation>(new ReferenceDependencyDescriptor(typeof(TImplementation), _ => builder.Invoke()));
+            return TryRegister<TImplementation>(new InstanceDependencyDescriptor<TImplementation>(builder));
         }
 
         public IRegistrationDefinition<TImplementation> TryRegister<TImplementation>(Func<IDependencyProvider, TImplementation> builder)
         {
-            return TryRegister<TImplementation>(new ReferenceDependencyDescriptor(typeof(TImplementation), p => builder.Invoke(p)));
+            return TryRegister<TImplementation>(new ReferenceDependencyDescriptor<TImplementation>(builder));
         }
 
         public IRegistrationDefinition<TImplementation> TryRegister<TImplementation>()

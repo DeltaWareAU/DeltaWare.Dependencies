@@ -1,6 +1,5 @@
 ﻿using DeltaWare.Dependencies.Abstractions.Exceptions;
 using System;
-using System.Reflection;
 
 namespace DeltaWare.Dependencies.Abstractions
 {
@@ -20,7 +19,7 @@ namespace DeltaWare.Dependencies.Abstractions
         {
             if (provider.TryGetDependency(typeof(T), out object value))
             {
-                instance = (T) value;
+                instance = (T)value;
 
                 return true;
             }

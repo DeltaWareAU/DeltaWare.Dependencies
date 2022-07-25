@@ -1,5 +1,5 @@
-﻿using System;
-using DeltaWare.Dependencies.Abstractions.Descriptor;
+﻿using DeltaWare.Dependencies.Abstractions.Descriptor;
+using System;
 
 namespace DeltaWare.Dependencies.Abstractions
 {

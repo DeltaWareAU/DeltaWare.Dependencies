@@ -11,7 +11,7 @@ using System.Reflection;
 
 namespace DeltaWare.Dependencies.Descriptors
 {
-    [DebuggerDisplay("DefinitionType: {DefinitionType.Name} | Lifetime: {Lifetime} - Binding: {Binding}")]
+    [DebuggerDisplay("DefinitionType: {ImplementationType.Name} | Lifetime: {Lifetime} - Binding: {Binding}")]
     public abstract class DependencyDescriptorBase : IDependencyDescriptor
     {
         private readonly List<IConfiguration> _configuration = new();

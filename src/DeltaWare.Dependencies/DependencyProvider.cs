@@ -12,17 +12,17 @@ namespace DeltaWare.Dependencies
     {
         private readonly IDependencyResolver _dependencyResolver;
 
-        private readonly LifetimeScope _providerScope;
-
         private readonly object _concurrencyLock = new();
 
-        public DependencyProvider(LifetimeScope providerScope)
+        protected readonly LifetimeScope LifetimeScope;
+
+        public DependencyProvider(LifetimeScope lifetimeScope)
         {
-            _providerScope = providerScope ?? throw new ArgumentNullException(nameof(providerScope));
-            _dependencyResolver = new DependencyProviderResolver(this, providerScope.Resolver);
+            LifetimeScope = lifetimeScope ?? throw new ArgumentNullException(nameof(lifetimeScope));
+            _dependencyResolver = new DependencyProviderResolver(this, lifetimeScope.Resolver);
         }
 
-        public object GetDependency(Type definition)
+        public virtual object GetDependency(Type definition)
         {
             lock (_concurrencyLock)
             {
@@ -30,7 +30,7 @@ namespace DeltaWare.Dependencies
             }
         }
 
-        public bool TryGetDependency(Type definition, out object instance)
+        public virtual bool TryGetDependency(Type definition, out object instance)
         {
             instance = InternalGetDependency(definition);
 
@@ -63,18 +63,19 @@ namespace DeltaWare.Dependencies
 
             return InternalGetDependency(dependency, providerCallStack);
         }
+
         internal object InternalGetDependency(IDependencyDescriptor dependency, DependencyProviderCallStack providerCallStack = null)
         {
             if (providerCallStack == null)
             {
-                providerCallStack = new DependencyProviderCallStack(this, dependency);
+                providerCallStack = new DependencyProviderCallStack(LifetimeScope, dependency);
             }
             else
             {
                 providerCallStack = providerCallStack.CreateChild(dependency);
             }
 
-            if (_providerScope.TryGetInstance(dependency, out IDependencyInstance instance))
+            if (LifetimeScope.TryGetInstance(dependency, out IDependencyInstance instance))
             {
                 return instance.Instance;
             }
@@ -86,7 +87,7 @@ namespace DeltaWare.Dependencies
                 throw NullDependencyInstanceException.NullInstance(dependency.ImplementationType);
             }
 
-            _providerScope.RegisterInstance(instance);
+            LifetimeScope.RegisterInstance(instance);
 
             return instance.Instance;
         }
@@ -103,7 +104,7 @@ namespace DeltaWare.Dependencies
                 return;
             }
 
-            _providerScope.Dispose();
+            LifetimeScope.Dispose();
 
             _disposed = true;
 

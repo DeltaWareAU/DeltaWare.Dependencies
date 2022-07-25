@@ -1,7 +1,7 @@
-﻿using DeltaWare.Dependencies.Abstractions.Registration;
+﻿using DeltaWare.Dependencies.Abstractions.Descriptor;
+using DeltaWare.Dependencies.Abstractions.Registration;
 using DeltaWare.Dependencies.Abstractions.Resolver;
 using System;
-using DeltaWare.Dependencies.Abstractions.Descriptor;
 
 namespace DeltaWare.Dependencies.Abstractions
 {

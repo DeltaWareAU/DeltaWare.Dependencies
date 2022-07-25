@@ -5,15 +5,11 @@ using System.Diagnostics;
 namespace DeltaWare.Dependencies.Descriptors
 {
     [DebuggerDisplay("ReferenceType: {ImplementationType.Name} | Lifetime: {Lifetime} - Binding: {Binding}")]
-    internal class ReferenceDependencyDescriptor : DependencyDescriptorBase
+    internal sealed class ReferenceDependencyDescriptor<TImplementation> : ReferenceDependencyDescriptor
     {
-        private readonly Func<IDependencyProvider, object> _referenceBuilder;
+        private readonly Func<IDependencyProvider, TImplementation> _referenceBuilder;
 
-        protected ReferenceDependencyDescriptor(Type implementationType) : base(implementationType)
-        {
-        }
-
-        public ReferenceDependencyDescriptor(Type implementationType, Func<IDependencyProvider, object> referenceBuilder) : base(implementationType)
+        public ReferenceDependencyDescriptor(Func<IDependencyProvider, TImplementation> referenceBuilder) : base(typeof(TImplementation))
         {
             _referenceBuilder = referenceBuilder ?? throw new ArgumentNullException(nameof(referenceBuilder));
         }

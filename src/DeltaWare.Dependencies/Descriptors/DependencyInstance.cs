@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace DeltaWare.Dependencies.Descriptors
 {
-    [DebuggerDisplay("DefinitionType: {Type.Name} | Lifetime: {Lifetime} - Binding: {Binding}")]
+    [DebuggerDisplay("DefinitionType: {Descriptor.ImplementationType.Name} | Lifetime: {Descriptor.Lifetime} - Binding: {Descriptor.Binding}")]
     internal sealed class DependencyInstance : IDependencyInstance
     {
         public IDependencyDescriptor Descriptor { get; }

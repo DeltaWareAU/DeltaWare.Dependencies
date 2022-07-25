@@ -25,7 +25,7 @@ namespace DeltaWare.Dependencies.Tests
             }).AsTransient();
 
             collection.Register<TestDependency>().AsTransient();
-            
+
             collection.HasDependency<TestDisposable>().ShouldBeTrue();
             collection.HasDependency<TestDependency>().ShouldBeTrue();
         }
@@ -88,7 +88,7 @@ namespace DeltaWare.Dependencies.Tests
             {
                 c.TryRegister<TestDependency>().AsTransient();
             }).ShouldBeFalse();
-            
+
             collection.HasDependency<TestDisposable>().ShouldBeTrue();
             collection.HasDependency<TestDependency>().ShouldBeTrue();
         }
@@ -112,7 +112,7 @@ namespace DeltaWare.Dependencies.Tests
             }).AsScoped();
 
             collection.Register<TestDependency>().AsScoped();
-            
+
             collection.HasDependency<TestDisposable>().ShouldBeTrue();
             collection.HasDependency<TestDependency>().ShouldBeTrue();
         }
@@ -134,7 +134,7 @@ namespace DeltaWare.Dependencies.Tests
             }).AsScoped();
 
             collection.Register<TestDependency>().AsScoped();
-            
+
             collection.HasDependency<TestDisposable>().ShouldBeTrue();
             collection.HasDependency<TestDependency>().ShouldBeTrue();
 
@@ -177,7 +177,7 @@ namespace DeltaWare.Dependencies.Tests
             {
                 c.TryRegister<TestDependency>().AsScoped();
             }).ShouldBeFalse();
-            
+
             collection.HasDependency<TestDisposable>().ShouldBeTrue();
             collection.HasDependency<TestDependency>().ShouldBeTrue();
         }

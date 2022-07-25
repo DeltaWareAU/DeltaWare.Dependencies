@@ -21,7 +21,14 @@ namespace DeltaWare.Dependencies.Registrations
             _descriptor = descriptor ?? throw new ArgumentNullException(nameof(descriptor));
             _overrideDescriptor = overrideDescriptor;
 
-            Register(typeof(TImplementation));
+            if (descriptor is not ReferenceDependencyDescriptor)
+            {
+                Register(typeof(TImplementation));
+            }
+            else
+            {
+                Register(typeof(TImplementation), false);
+            }
         }
 
         public IRegistrationDefinition<TImplementation> DefineAs<TDefinition>()
@@ -78,7 +85,12 @@ namespace DeltaWare.Dependencies.Registrations
 
         private void Register(Type definition)
         {
-            if (_overrideDescriptor)
+            Register(definition, _overrideDescriptor);
+        }
+
+        private void Register(Type definition, bool overrideDescriptor)
+        {
+            if (overrideDescriptor)
             {
                 _dependencyCollection.InternalRegister(definition, _descriptor);
             }
