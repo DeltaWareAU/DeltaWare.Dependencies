@@ -8,7 +8,7 @@ namespace DeltaWare.Dependencies.Stack
 {
     internal class DependencyStack
     {
-        public List<DependencyStack> Children { get; } = new();
+        public List<DependencyStack> Children { get; } = new List<DependencyStack>();
 
         public DependencyStack ParentStack { get; }
 

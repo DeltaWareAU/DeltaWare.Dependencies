@@ -13,7 +13,7 @@ namespace DeltaWare.Dependencies
 {
     public class DependencyCollection : IDependencyCollection
     {
-        private readonly Dictionary<Type, DependencyDescriptorBase> _descriptors = new();
+        private readonly Dictionary<Type, DependencyDescriptorBase> _descriptors = new Dictionary<Type, DependencyDescriptorBase>();
 
         private readonly DependencyResolverBase _resolver;
 

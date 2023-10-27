@@ -14,7 +14,7 @@ namespace DeltaWare.Dependencies.Descriptors
     [DebuggerDisplay("DefinitionType: {ImplementationType.Name} | Lifetime: {Lifetime} - Binding: {Binding}")]
     public abstract class DependencyDescriptorBase : IDependencyDescriptor
     {
-        private readonly List<IConfiguration> _configuration = new();
+        private readonly List<IConfiguration> _configuration = new List<IConfiguration>();
 
         public Binding Binding { get; internal set; } = Binding.Bound;
 

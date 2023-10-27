@@ -21,13 +21,13 @@ namespace DeltaWare.Dependencies.Registrations
             _descriptor = descriptor ?? throw new ArgumentNullException(nameof(descriptor));
             _overrideDescriptor = overrideDescriptor;
 
-            if (descriptor is not ReferenceDependencyDescriptor)
+            if (descriptor is ReferenceDependencyDescriptor)
             {
-                Register(typeof(TImplementation));
+                Register(typeof(TImplementation), false);
             }
             else
             {
-                Register(typeof(TImplementation), false);
+                Register(typeof(TImplementation));
             }
         }
 

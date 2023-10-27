@@ -12,7 +12,7 @@ namespace DeltaWare.Dependencies
     {
         private readonly IDependencyResolver _dependencyResolver;
 
-        private readonly object _concurrencyLock = new();
+        private readonly object _concurrencyLock = new object();
 
         protected readonly LifetimeScope LifetimeScope;
 

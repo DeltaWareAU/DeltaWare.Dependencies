@@ -13,11 +13,11 @@ namespace DeltaWare.Dependencies
     {
         public LifetimeScope ParentScope { get; }
 
-        private readonly List<LifetimeScope> _childScopes = new();
+        private readonly List<LifetimeScope> _childScopes = new List<LifetimeScope>();
 
-        private readonly List<IDisposable> _disposables = new();
+        private readonly List<IDisposable> _disposables = new List<IDisposable>();
 
-        private readonly List<IDependencyInstance> _scopedInstances = new();
+        private readonly List<IDependencyInstance> _scopedInstances = new List<IDependencyInstance>();
 
         public IDependencyResolver Resolver { get; }
 
