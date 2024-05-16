@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+﻿using System;
 
 namespace DeltaWare.Dependencies.Tests.Types
 {
@@ -6,7 +6,7 @@ namespace DeltaWare.Dependencies.Tests.Types
     {
         public TestDisposable TestDisposable { get; }
 
-        public TestDependency(TestDisposable testDisposable, IMessageLogger message = null)
+        public TestDependency(TestDisposable testDisposable, IDisposable message = null)
         {
             TestDisposable = testDisposable;
         }
